@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "name": "banking-gateway",
+  "port": 8080,
+  "endpoints": [],
+  "extra_config": {}
+}
