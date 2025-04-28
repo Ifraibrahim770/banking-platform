@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- <include resource="org/springframework/boot/logging/logback/base.xml"/> -->
+
+    <!-- Define a custom console appender pattern -->
+    <appender name="CONSOLE_CUSTOM" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- Example Pattern: 2024-07-29 10:30:00.123 INFO [main] c.i.b.p.service.AuthService : User authenticated -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %-40.40logger{39} : %msg%n%throwable</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Application specific logging levels -->
+    <logger name="com.ibrahim.banking.profile_service" level="INFO"/>
+
+    <!-- Hibernate logging levels -->
+    <!-- Set to WARN or OFF to disable SQL statement logging -->
+    <logger name="org.hibernate.SQL" level="WARN"/>
+    <!-- Set to WARN or OFF to disable SQL parameter logging -->
+    <logger name="org.hibernate.type.descriptor.sql" level="WARN"/>
+    <!-- You might also want to adjust levels for other noisy loggers like -->
+    <!-- <logger name="org.springframework.web" level="INFO"/> -->
+    <!-- <logger name="org.springframework.security" level="INFO"/> -->
+    <!-- <logger name="org.apache.catalina" level="WARN"/> -->
+
+    <!-- Root logger configuration - Use the custom console appender -->
+    <root level="INFO">
+        <!-- Remove the default console appender if you included base.xml which might add one -->
+        <!-- Or just rely on the one defined in base.xml if its pattern is acceptable -->
+        <!-- Let's use our custom one defined above -->
+         <appender-ref ref="CONSOLE_CUSTOM" />
+         <!-- Keep other appenders if defined in base.xml and needed, e.g., FILE -->
+         <!-- <appender-ref ref="FILE" /> -->
+    </root>
+
+    <!-- Example of Spring Profile specific configuration (optional) -->
+    <!--
+    <springProfile name="dev">
+        <logger name="com.ibrahim.banking.profile_service" level="DEBUG"/>
+    </springProfile>
+
+    <springProfile name="prod">
+        <logger name="com.ibrahim.banking.profile_service" level="INFO"/>
+        <logger name="org.hibernate.SQL" level="OFF"/>
+        <logger name="org.hibernate.type.descriptor.sql" level="OFF"/>
+    </springProfile>
+    -->
+
+</configuration> 

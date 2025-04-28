@@ -1,0 +1,208 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-1234-abcdef123456",
+		"name": "Banking Microservices API",
+		"description": "Collection for the Banking System Microservices",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Profile Service",
+			"description": "Endpoints related to the User Profile Service",
+			"item": [
+				{
+					"name": "Auth",
+					"description": "Authentication related endpoints",
+					"item": [
+						{
+							"name": "Sign Up",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\": \"testuser\",\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\",\n    \"firstName\": \"Test\",\n    \"lastName\": \"User\",\n    \"role\": [\"user\"]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/signup",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"signup"
+									]
+								},
+								"description": "Register a new user. Roles can be [\"user\"], [\"admin\"], or omitted (defaults to user)."
+							},
+							"response": []
+						},
+						{
+							"name": "Sign In",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"try {",
+											"    var jsonData = pm.response.json();",
+											"    if (jsonData && jsonData.token) {",
+											"        pm.collectionVariables.set(\"jwt_token\", jsonData.token);",
+											"        console.log('JWT Token set.');",
+											"    } else {",
+											"        console.log('Token not found in response.');",
+											"    }",
+											"} catch (e) {",
+											"    console.log('Error parsing response or setting token:', e);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\": \"testuser\",\n    \"password\": \"password123\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/signin",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"signin"
+									]
+								},
+								"description": "Authenticate a user and get a JWT token. The token is automatically stored in the `jwt_token` collection variable."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Profile",
+					"description": "Profile management endpoints",
+					"item": [
+						{
+							"name": "Get My Profile",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/profile/me",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"profile",
+										"me"
+									]
+								},
+								"description": "Retrieves the profile information for the currently authenticated user. Requires Bearer token authentication."
+							},
+							"response": []
+						},
+						{
+							"name": "Update My Profile",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"test_updated@example.com\",\n    \"firstName\": \"TestUpdated\",\n    \"lastName\": \"UserUpdated\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/profile/me",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"profile",
+										"me"
+									]
+								},
+								"description": "Updates the profile information (email, firstName, lastName) for the currently authenticated user. Requires Bearer token authentication."
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8081",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string",
+			"description": "Stores the JWT token obtained after successful signin"
+		}
+	]
+} 
