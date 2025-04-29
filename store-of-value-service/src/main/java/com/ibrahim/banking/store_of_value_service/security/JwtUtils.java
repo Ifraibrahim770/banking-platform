@@ -21,18 +21,18 @@ import java.util.stream.Collectors;
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
-    @Value("${app.jwt.secret}") // In application.properties: app.jwt.secret=YourVeryLongAndSecureSecretKeyHere
+    @Value("${app.jwt.secret}")
     private String jwtSecretString;
 
-    @Value("${app.jwt.expirationMs}") // In application.properties: app.jwt.expirationMs=86400000 (e.g., 24 hours)
+    @Value("${app.jwt.expirationMs}")
     private int jwtExpirationMs;
 
-    private SecretKey key; // Derived from jwtSecretString
+    private SecretKey key;
 
     // Initialize the key after properties are set
     @jakarta.annotation.PostConstruct
     public void init() {
-        // Ensure the secret key is strong enough for HS512
+
         if (jwtSecretString == null || jwtSecretString.length() < 64) { // HS512 needs 512 bits = 64 bytes
             logger.warn("JWT Secret is too short! Using a default generated key. PLEASE SET a strong 'app.jwt.secret' in properties.");
             this.key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
@@ -79,7 +79,7 @@ public class JwtUtils {
                             .parseClaimsJws(token)
                             .getBody();
 
-        // Assuming roles are stored in a claim named "roles" as a List<String>
+
         List<String> roles = claims.get("roles", List.class);
 
         if (roles == null) {
@@ -87,7 +87,7 @@ public class JwtUtils {
             return List.of(); // Return empty list if no roles claim
         }
 
-        // Convert role strings to SimpleGrantedAuthority objects
+
         return roles.stream()
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());

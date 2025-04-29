@@ -1,0 +1,241 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-1234-abcdef123456",
+		"name": "Store of Value Service",
+		"description": "API collection for the Store of Value microservice in the banking system.\n\n**Setup:**\n1. Set up a Postman environment.\n2. Add the following variables to the environment:\n   - `baseUrl`: The base URL of the running service (e.g., `http://localhost:8080`)\n   - `admin_token`: A valid JWT token for a user with `ROLE_ADMIN`.\n   - `user_token`: A valid JWT token for a user with `ROLE_USER`.\n   - `accountNumber`: You can set this after creating an account.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Account Creation (Admin)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Example: Capture the created account number",
+							"try {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData && jsonData.accountNumber) {",
+							"        pm.environment.set(\"accountNumber\", jsonData.accountNumber);",
+							"        console.log('Set accountNumber environment variable to: ' + jsonData.accountNumber);",
+							"    }",
+							"} catch (e) {",
+							"    console.log('Could not parse response JSON or find accountNumber');",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"profileId\": \"prof-uuid-12345\",\n    \"accountType\": \"SAVINGS\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/accounts",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"accounts"
+					]
+				},
+				"description": "Creates a new bank account linked to a profile ID. Requires ROLE_ADMIN.\nThe created account number will be automatically captured into the `accountNumber` environment variable if the request is successful."
+			},
+			"response": []
+		},
+		{
+			"name": "Balance Enquiry (User)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/accounts/{{accountNumber}}/balance",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"accounts",
+						"{{accountNumber}}",
+						"balance"
+					]
+				},
+				"description": "Checks the balance of a specific account. Requires ROLE_USER."
+			},
+			"response": []
+		},
+		{
+			"name": "Account Update (Admin)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"accountType\": \"CURRENT\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/accounts/{{accountNumber}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"accounts",
+						"{{accountNumber}}"
+					]
+				},
+				"description": "Updates details for a specific account (currently only `accountType`). Requires ROLE_ADMIN."
+			},
+			"response": []
+		},
+		{
+			"name": "Account Activation (Admin)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/accounts/{{accountNumber}}/activate",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"accounts",
+						"{{accountNumber}}",
+						"activate"
+					]
+				},
+				"description": "Activates a specific account. Requires ROLE_ADMIN."
+			},
+			"response": []
+		},
+		{
+			"name": "Account Deactivation (Admin)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/accounts/{{accountNumber}}/deactivate",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"accounts",
+						"{{accountNumber}}",
+						"deactivate"
+					]
+				},
+				"description": "Deactivates a specific account. Requires ROLE_ADMIN."
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "noauth"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string",
+			"description": "Base URL of the Store of Value Service"
+		},
+		{
+			"key": "accountNumber",
+			"value": "1234567890",
+			"type": "string",
+			"description": "Account number to use in requests (can be updated by Create Account)"
+		},
+		{
+			"key": "admin_token",
+			"value": "YOUR_ADMIN_JWT_TOKEN_HERE",
+			"type": "string",
+			"description": "JWT token for a user with ROLE_ADMIN"
+		},
+		{
+			"key": "user_token",
+			"value": "YOUR_USER_JWT_TOKEN_HERE",
+			"type": "string",
+			"description": "JWT token for a user with ROLE_USER"
+		}
+	]
+} 

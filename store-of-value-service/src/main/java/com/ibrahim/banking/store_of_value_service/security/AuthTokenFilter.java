@@ -19,14 +19,10 @@ import java.io.IOException;
 import java.util.List;
 
 // Note: This filter needs to be registered in the SecurityConfig
-// We are not adding @Component here because we will create it as a Bean in SecurityConfig
 public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtUtils jwtUtils;
-
-    // @Autowired
-    // private UserDetailsServiceImpl userDetailsService; // Removed dependency
 
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
@@ -40,7 +36,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 // Extract authorities directly from the token
                 List<GrantedAuthority> authorities = jwtUtils.getAuthoritiesFromJwtToken(jwt);
 
-                // Create authentication token using username and extracted authorities
+
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(username, null, authorities);
 
