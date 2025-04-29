@@ -36,7 +36,7 @@ public class DepositTransactionConsumer {
         logger.info("Received deposit transaction with reference: {}", messageDto.getTransactionReference());
         
         try {
-            // Find the transaction in the database
+            // find transaction in db
             Optional<Transaction> optionalTransaction = transactionRepository.findByTransactionReference(
                     messageDto.getTransactionReference());
             
@@ -47,7 +47,7 @@ public class DepositTransactionConsumer {
             
             Transaction transaction = optionalTransaction.get();
             
-            // Call Store of Value service to credit the account
+            // call SOV to add money
             boolean depositSuccessful = accountServiceClient.creditAccount(
                     transaction.getSourceAccountId(),
                     transaction.getAmount(),
@@ -56,14 +56,13 @@ public class DepositTransactionConsumer {
             );
             
             if (depositSuccessful) {
-                // Update transaction status
                 transaction.setStatus(TransactionStatus.COMPLETED);
                 transaction.setCompletedAt(Instant.now());
                 transactionRepository.save(transaction);
                 
                 logger.info("Deposit transaction completed successfully: {}", transaction.getTransactionReference());
             } else {
-                // Mark as failed
+                // make it failed
                 transaction.setStatus(TransactionStatus.FAILED);
                 transaction.setFailureReason("Failed to credit account");
                 transactionRepository.save(transaction);
@@ -71,7 +70,7 @@ public class DepositTransactionConsumer {
                 logger.error("Failed to complete deposit transaction: {}", transaction.getTransactionReference());
             }
             
-            // Send notification
+            // send notification to user
             notificationPublisherService.publishTransactionNotification(transaction);
             
         } catch (Exception e) {

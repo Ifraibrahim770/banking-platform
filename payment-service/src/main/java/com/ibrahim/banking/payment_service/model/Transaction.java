@@ -12,40 +12,40 @@ public class Transaction {
     private Long id;
     
     @Column(nullable = false)
-    private String transactionReference;  // Unique reference number
+    private String transactionReference;  // refrence number for transaction
     
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private TransactionType type;  // DEPOSIT, WITHDRAWAL, TRANSFER
+    private TransactionType type;
     
     @Column(nullable = false)
     private BigDecimal amount;
     
     @Column(nullable = false)
-    private Long sourceAccountId;  // Account ID from Store of Value service
+    private Long sourceAccountId;  // account from store of value
     
-    private Long destinationAccountId;  // Only for transfers, null for deposits/withdrawals
+    private Long destinationAccountId;  // for transfers only
     
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private TransactionStatus status;  // PENDING, COMPLETED, FAILED, REVERSED
+    private TransactionStatus status;
     
     @Column(nullable = false)
-    private String currency;  // Currency code (USD, EUR, etc.)
+    private String currency;
     
-    private String description;  // Transaction description/narration
+    private String description;
     
     @Column(nullable = false)
     private Instant createdAt;
     
-    private Instant completedAt;  // When transaction was completed
+    private Instant completedAt;
     
     @Column(nullable = false)
-    private Long userId;  // ID of user who initiated the transaction
+    private Long userId;
     
-    private String failureReason;  // Reason if transaction failed
+    private String failureReason;
     
-    private String metadata;  // Additional JSON data if needed
+    private String metadata;  // extra data as JSON if needed
     
     // Getters and setters
     public Long getId() {

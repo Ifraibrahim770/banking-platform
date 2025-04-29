@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "*", maxAge = 3600) // Configure CORS as needed
@@ -36,6 +37,19 @@ public class ProfileController {
         } catch (Exception e) {
              // Catch other potential errors (e.g., user not found unexpectedly)
              return ResponseEntity.status(500).body(new MessageResponse("Error updating profile: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')") // Restrict to admins for security
+    public ResponseEntity<?> getUserProfileById(@PathVariable Long id) {
+        try {
+            UserProfileResponse profile = profileService.getUserProfileById(id);
+            return ResponseEntity.ok(profile);
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(404).body(new MessageResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new MessageResponse("Error fetching profile: " + e.getMessage()));
         }
     }
 

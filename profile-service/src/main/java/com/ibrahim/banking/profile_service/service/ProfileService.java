@@ -103,4 +103,12 @@ public class ProfileService {
             return mapUserToProfileResponse(user);
         }
     }
+
+    @Transactional(readOnly = true)
+    public UserProfileResponse getUserProfileById(Long userId) {
+        logger.info("Fetching profile for user ID: {}", userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with ID: " + userId));
+        return mapUserToProfileResponse(user);
+    }
 } 

@@ -17,25 +17,23 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // Enables method-level security (e.g., @PreAuthorize)
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
 
-    // Define AuthTokenFilter as a Bean
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
         return new AuthTokenFilter();
     }
 
-    // Expose AuthenticationManager as a Bean
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
 
-    // Bean for hashing passwords
+    // for password hash
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -44,26 +42,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Disable CSRF protection as we are using JWT and it's stateless
                 .csrf(csrf -> csrf.disable())
-                // Configure exception handling (for 401 Unauthorized)
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(unauthorizedHandler)
                         .accessDeniedHandler(new AccessDeniedHandlerImpl())
                 )
-                // Configure session management to be stateless, as we use JWT
+                // using staless sessions cuz JWT
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                // Configure authorization rules
                 .authorizeHttpRequests(authz -> authz
-                        // Allow public access to actuator endpoints
                         .requestMatchers("/actuator/**").permitAll()
-                        // Any other request must be authenticated
                         .anyRequest().authenticated()
                 );
 
-        // Add JWT token filter before UsernamePasswordAuthenticationFilter
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

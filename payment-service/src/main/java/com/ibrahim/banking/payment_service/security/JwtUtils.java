@@ -29,11 +29,11 @@ public class JwtUtils {
 
     private SecretKey key;
 
-    // Initialize the key after properties are set
+    // init key after props loaded
     @jakarta.annotation.PostConstruct
     public void init() {
 
-        if (jwtSecretString == null || jwtSecretString.length() < 64) { // HS512 needs 512 bits = 64 bytes
+        if (jwtSecretString == null || jwtSecretString.length() < 64) { // HS512 need 512 bits
             logger.warn("JWT Secret is too short! Using a default generated key. PLEASE SET a strong 'app.jwt.secret' in properties.");
             this.key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
         } else {
@@ -71,7 +71,7 @@ public class JwtUtils {
         return claims.getSubject();
     }
 
-    @SuppressWarnings("unchecked") // Suppress warning for casting claims.get("roles")
+    @SuppressWarnings("unchecked")
     public List<GrantedAuthority> getAuthoritiesFromJwtToken(String token) {
         Claims claims = Jwts.parserBuilder()
                             .setSigningKey(key)
@@ -84,7 +84,7 @@ public class JwtUtils {
 
         if (roles == null) {
             logger.warn("JWT token does not contain 'roles' claim.");
-            return List.of(); // Return empty list if no roles claim
+            return List.of(); // no roles found
         }
 
 
