@@ -5,6 +5,7 @@ import com.ibrahim.banking.profile_service.dto.JwtResponse;
 import com.ibrahim.banking.profile_service.dto.LoginRequest;
 import com.ibrahim.banking.profile_service.dto.SignupRequest;
 import com.ibrahim.banking.profile_service.model.User;
+import com.ibrahim.banking.profile_service.security.AuthEntryPointJwt;
 import com.ibrahim.banking.profile_service.security.JwtUtils;
 import com.ibrahim.banking.profile_service.security.SecurityConfig;
 import com.ibrahim.banking.profile_service.security.UserDetailsServiceImpl;
@@ -44,6 +45,9 @@ class AuthControllerTest {
     private UserDetailsServiceImpl userDetailsService;
     @MockBean
     private JwtUtils jwtUtils;
+
+    @MockBean
+    private AuthEntryPointJwt unauthorizedHandler;
 
     // --- Sign In Tests (/api/auth/signin) ---
 

@@ -1,4 +1,4 @@
-package com.ibrahim.banking.profile_service.security;
+package com.ibrahim.banking.store_of_value_service.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -44,15 +45,8 @@ public class JwtUtils {
     public String generateJwtToken(Authentication authentication) {
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
 
-        // Extract authorities (roles) from the UserDetails principal
-        List<String> roles = userPrincipal.getAuthorities().stream()
-                                .map(GrantedAuthority::getAuthority)
-                                .collect(Collectors.toList());
-
         return Jwts.builder()
                 .setSubject((userPrincipal.getUsername()))
-                 // Add the roles as a custom claim
-                .claim("roles", roles)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key, SignatureAlgorithm.HS512)
@@ -77,6 +71,28 @@ public class JwtUtils {
         return claims.getSubject();
     }
 
+    @SuppressWarnings("unchecked") // Suppress warning for casting claims.get("roles")
+    public List<GrantedAuthority> getAuthoritiesFromJwtToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                            .setSigningKey(key)
+                            .build()
+                            .parseClaimsJws(token)
+                            .getBody();
+
+        // Assuming roles are stored in a claim named "roles" as a List<String>
+        List<String> roles = claims.get("roles", List.class);
+
+        if (roles == null) {
+            logger.warn("JWT token does not contain 'roles' claim.");
+            return List.of(); // Return empty list if no roles claim
+        }
+
+        // Convert role strings to SimpleGrantedAuthority objects
+        return roles.stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
+    }
+
     public boolean validateJwtToken(String authToken) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(authToken);
@@ -95,4 +111,4 @@ public class JwtUtils {
 
         return false;
     }
-} 
+}

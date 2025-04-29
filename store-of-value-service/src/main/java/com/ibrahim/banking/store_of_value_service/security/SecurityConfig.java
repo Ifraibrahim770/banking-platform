@@ -1,4 +1,4 @@
-package com.ibrahim.banking.profile_service.security;
+package com.ibrahim.banking.store_of_value_service.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -18,9 +18,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableMethodSecurity // Enables method-level security (e.g., @PreAuthorize)
 public class SecurityConfig {
-
-    @Autowired
-    private UserDetailsServiceImpl userDetailsService; // Needed for AuthenticationManager
 
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
@@ -58,8 +55,8 @@ public class SecurityConfig {
                 )
                 // Configure authorization rules
                 .authorizeHttpRequests(authz -> authz
-                        // Allow public access to registration and login endpoints (we'll define these later)
-                        .requestMatchers("/api/auth/**").permitAll()
+                        // Allow public access to actuator endpoints
+                        .requestMatchers("/actuator/**").permitAll()
                         // Any other request must be authenticated
                         .anyRequest().authenticated()
                 );

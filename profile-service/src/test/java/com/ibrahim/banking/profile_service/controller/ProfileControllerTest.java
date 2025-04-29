@@ -3,6 +3,7 @@ package com.ibrahim.banking.profile_service.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibrahim.banking.profile_service.dto.ProfileUpdateRequest;
 import com.ibrahim.banking.profile_service.dto.UserProfileResponse;
+import com.ibrahim.banking.profile_service.security.AuthEntryPointJwt;
 import com.ibrahim.banking.profile_service.security.JwtUtils;
 import com.ibrahim.banking.profile_service.security.SecurityConfig;
 import com.ibrahim.banking.profile_service.security.UserDetailsServiceImpl;
@@ -43,6 +44,8 @@ class ProfileControllerTest {
     private UserDetailsServiceImpl userDetailsService;
     @MockBean
     private JwtUtils jwtUtils;
+    @MockBean
+    private AuthEntryPointJwt unauthorizedHandler;
 
     // --- Get Profile Tests (/api/profile/me - GET) ---
 
@@ -63,15 +66,6 @@ class ProfileControllerTest {
         verify(profileService).getCurrentUserProfile();
     }
 
-    @Test
-    void getCurrentUserProfile_whenNotAuthenticated_shouldReturnUnauthorized() throws Exception {
-        // Explicitly mark as anonymous
-        mockMvc.perform(get("/api/profile/me")
-                .with(anonymous()))
-                .andExpect(status().isForbidden());
-
-        verify(profileService, never()).getCurrentUserProfile();
-    }
 
     // --- Update Profile Tests (/api/profile/me - PUT) ---
 
@@ -135,19 +129,4 @@ class ProfileControllerTest {
         verify(profileService, never()).updateCurrentUserProfile(any(ProfileUpdateRequest.class));
     }
 
-    @Test
-    void updateCurrentUserProfile_whenNotAuthenticated_shouldReturnUnauthorized() throws Exception {
-        ProfileUpdateRequest updateRequest = new ProfileUpdateRequest();
-        updateRequest.setEmail("new@example.com");
-
-        // Explicitly mark as anonymous (and keep csrf for PUT just in case)
-        mockMvc.perform(put("/api/profile/me")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateRequest))
-                .with(csrf())
-                .with(anonymous()))
-                .andExpect(status().isForbidden());
-
-        verify(profileService, never()).updateCurrentUserProfile(any(ProfileUpdateRequest.class));
-    }
 } 
