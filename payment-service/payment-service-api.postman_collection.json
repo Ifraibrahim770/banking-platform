@@ -1,0 +1,466 @@
+{
+	"info": {
+		"_postman_id": "34b8f5e2-8e91-4c5d-a27f-77e6d86e5e2c",
+		"name": "Payment Service API",
+		"description": "Collection of API endpoints for the Banking System Payment Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Get Local Auth Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"user\",\n    \"password\": \"password\"\n}"
+						},
+						"url": {
+							"raw": "{{payment_service_url}}/api/auth/signin",
+							"host": [
+								"{{payment_service_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signin"
+							]
+						},
+						"description": "Get an authentication token for the Payment Service API"
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints for the Payment Service API"
+		},
+		{
+			"name": "Transactions",
+			"item": [
+				{
+					"name": "Create Deposit Transaction",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": 1,\n    \"amount\": 100.00,\n    \"currency\": \"USD\",\n    \"description\": \"Deposit into checking account\",\n    \"userId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{payment_service_url}}/api/transactions/deposit",
+							"host": [
+								"{{payment_service_url}}"
+							],
+							"path": [
+								"api",
+								"transactions",
+								"deposit"
+							]
+						},
+						"description": "Create a new deposit transaction"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Withdrawal Transaction",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": 1,\n    \"amount\": 50.00,\n    \"currency\": \"USD\",\n    \"description\": \"ATM withdrawal\",\n    \"userId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{payment_service_url}}/api/transactions/withdrawal",
+							"host": [
+								"{{payment_service_url}}"
+							],
+							"path": [
+								"api",
+								"transactions",
+								"withdrawal"
+							]
+						},
+						"description": "Create a new withdrawal transaction"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Transfer Transaction",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"sourceAccountId\": 1,\n    \"destinationAccountId\": 2,\n    \"amount\": 75.50,\n    \"currency\": \"USD\",\n    \"description\": \"Transfer to savings account\",\n    \"userId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{payment_service_url}}/api/transactions/transfer",
+							"host": [
+								"{{payment_service_url}}"
+							],
+							"path": [
+								"api",
+								"transactions",
+								"transfer"
+							]
+						},
+						"description": "Create a new transfer transaction between accounts"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transaction by Reference",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{payment_service_url}}/api/transactions/TXN-12345678",
+							"host": [
+								"{{payment_service_url}}"
+							],
+							"path": [
+								"api",
+								"transactions",
+								"TXN-12345678"
+							]
+						},
+						"description": "Get transaction details by transaction reference"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transactions by User ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{payment_service_url}}/api/transactions/user/1",
+							"host": [
+								"{{payment_service_url}}"
+							],
+							"path": [
+								"api",
+								"transactions",
+								"user",
+								"1"
+							]
+						},
+						"description": "Get all transactions for a specific user"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transactions by Account ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{payment_service_url}}/api/transactions/account/1",
+							"host": [
+								"{{payment_service_url}}"
+							],
+							"path": [
+								"api",
+								"transactions",
+								"account",
+								"1"
+							]
+						},
+						"description": "Get all transactions for a specific account"
+					},
+					"response": []
+				}
+			],
+			"description": "Transaction-related endpoints"
+		},
+		{
+			"name": "Store of Value Service",
+			"item": [
+				{
+					"name": "Get SoV Auth Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"sov_token\", jsonData.token);",
+									"postman.setEnvironmentVariable(\"sov_token_type\", jsonData.type);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testadmin\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{sov_service_url}}/api/auth/signin",
+							"host": [
+								"{{sov_service_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signin"
+							]
+						},
+						"description": "Get an authentication token for the Store of Value Service API"
+					},
+					"response": []
+				},
+				{
+					"name": "Check Account Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{sov_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{sov_service_url}}/api/accounts/1/status",
+							"host": [
+								"{{sov_service_url}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"1",
+								"status"
+							]
+						},
+						"description": "Check if an account is active"
+					},
+					"response": []
+				},
+				{
+					"name": "Credit Account",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{sov_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 100.00,\n    \"currency\": \"USD\",\n    \"transactionReference\": \"TXN-12345678\"\n}"
+						},
+						"url": {
+							"raw": "{{sov_service_url}}/api/accounts/1/credit",
+							"host": [
+								"{{sov_service_url}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"1",
+								"credit"
+							]
+						},
+						"description": "Credit an account (deposit)"
+					},
+					"response": []
+				},
+				{
+					"name": "Debit Account",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{sov_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 50.00,\n    \"currency\": \"USD\",\n    \"transactionReference\": \"TXN-87654321\"\n}"
+						},
+						"url": {
+							"raw": "{{sov_service_url}}/api/accounts/1/debit",
+							"host": [
+								"{{sov_service_url}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"1",
+								"debit"
+							]
+						},
+						"description": "Debit an account (withdrawal)"
+					},
+					"response": []
+				}
+			],
+			"description": "Store of Value Service API endpoints used by the Payment Service"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "payment_service_url",
+			"value": "http://localhost:8082",
+			"type": "string"
+		},
+		{
+			"key": "sov_service_url",
+			"value": "http://localhost:8081",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "your_jwt_token_here",
+			"type": "string"
+		},
+		{
+			"key": "sov_token",
+			"value": "your_sov_jwt_token_here",
+			"type": "string"
+		},
+		{
+			"key": "sov_token_type",
+			"value": "Bearer",
+			"type": "string"
+		}
+	]
+} 

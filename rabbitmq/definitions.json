@@ -1,0 +1,199 @@
+{
+  "rabbit_version": "3.9.13",
+  "users": [
+    {
+      "name": "guest",
+      "password_hash": "BMfxN8drrYcIqXZMr+pWTpDT0nMcOagMduLX0bjr4jwud/pN",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "administrator"
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "guest",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "payment.direct",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "payment.dlx",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "notification.direct",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "notification.dlx",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "payment.deposit.queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "payment.dlx",
+        "x-dead-letter-routing-key": "payment.deposit.dlq"
+      }
+    },
+    {
+      "name": "payment.withdrawal.queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "payment.dlx",
+        "x-dead-letter-routing-key": "payment.withdrawal.dlq"
+      }
+    },
+    {
+      "name": "payment.transfer.queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "payment.dlx",
+        "x-dead-letter-routing-key": "payment.transfer.dlq"
+      }
+    },
+    {
+      "name": "payment.deposit.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "payment.withdrawal.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "payment.transfer.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "notification.queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "notification.dlx",
+        "x-dead-letter-routing-key": "notification.dlq"
+      }
+    },
+    {
+      "name": "notification.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "payment.direct",
+      "vhost": "/",
+      "destination": "payment.deposit.queue",
+      "destination_type": "queue",
+      "routing_key": "payment.deposit",
+      "arguments": {}
+    },
+    {
+      "source": "payment.direct",
+      "vhost": "/",
+      "destination": "payment.withdrawal.queue",
+      "destination_type": "queue",
+      "routing_key": "payment.withdrawal",
+      "arguments": {}
+    },
+    {
+      "source": "payment.direct",
+      "vhost": "/",
+      "destination": "payment.transfer.queue",
+      "destination_type": "queue",
+      "routing_key": "payment.transfer",
+      "arguments": {}
+    },
+    {
+      "source": "payment.dlx",
+      "vhost": "/",
+      "destination": "payment.deposit.dlq",
+      "destination_type": "queue",
+      "routing_key": "payment.deposit.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "payment.dlx",
+      "vhost": "/",
+      "destination": "payment.withdrawal.dlq",
+      "destination_type": "queue",
+      "routing_key": "payment.withdrawal.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "payment.dlx",
+      "vhost": "/",
+      "destination": "payment.transfer.dlq",
+      "destination_type": "queue",
+      "routing_key": "payment.transfer.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "notification.direct",
+      "vhost": "/",
+      "destination": "notification.queue",
+      "destination_type": "queue",
+      "routing_key": "notification",
+      "arguments": {}
+    },
+    {
+      "source": "notification.dlx",
+      "vhost": "/",
+      "destination": "notification.dlq",
+      "destination_type": "queue",
+      "routing_key": "notification.dlq",
+      "arguments": {}
+    }
+  ]
+} 

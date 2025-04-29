@@ -2,6 +2,7 @@ package com.ibrahim.banking.store_of_value_service.exception;
 
 import com.ibrahim.banking.store_of_value_service.dto.ErrorResponse;
 import com.ibrahim.banking.store_of_value_service.exception.AccountNotFoundException;
+import com.ibrahim.banking.store_of_value_service.exception.InsufficientFundsException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +58,16 @@ public class GlobalExceptionHandler {
                 //, errors // Uncomment if ErrorResponse has 'details' field
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InsufficientFundsException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientFundsException(InsufficientFundsException ex) {
+        ErrorResponse error = new ErrorResponse();
+        error.setStatus(HttpStatus.BAD_REQUEST.value());
+        error.setMessage(ex.getMessage());
+        error.setTimestamp(LocalDateTime.now());
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     // --- Generic Exception Handler (Catch-all) ---

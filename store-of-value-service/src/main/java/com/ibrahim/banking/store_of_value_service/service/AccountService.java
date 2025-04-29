@@ -3,7 +3,10 @@ package com.ibrahim.banking.store_of_value_service.service;
 import com.ibrahim.banking.store_of_value_service.dto.CreateAccountRequest;
 import com.ibrahim.banking.store_of_value_service.dto.AccountResponse;
 import com.ibrahim.banking.store_of_value_service.dto.UpdateAccountRequest;
+import com.ibrahim.banking.store_of_value_service.dto.TransactionRequest;
+import com.ibrahim.banking.store_of_value_service.dto.AccountStatusResponse;
 import com.ibrahim.banking.store_of_value_service.exception.AccountNotFoundException;
+import com.ibrahim.banking.store_of_value_service.exception.InsufficientFundsException;
 import com.ibrahim.banking.store_of_value_service.model.Account;
 import com.ibrahim.banking.store_of_value_service.model.AccountStatus;
 import com.ibrahim.banking.store_of_value_service.repository.AccountRepository;
@@ -120,6 +123,62 @@ public class AccountService {
         return mapToAccountResponse(updatedAccount);
     }
 
+    @Transactional
+    public AccountResponse creditAccount(String accountNumber, TransactionRequest request) {
+        logger.info("Attempting to credit account number: {} with amount: {}", accountNumber, request.getAmount());
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException("Account not found with number: " + accountNumber));
+
+        if (account.getStatus() != AccountStatus.ACTIVE) {
+            logger.error("Cannot credit account {} because it is not active. Current status: {}", accountNumber, account.getStatus());
+            throw new IllegalStateException("Account must be ACTIVE to be credited. Current state: " + account.getStatus());
+        }
+
+        // Add the amount to the current balance
+        BigDecimal newBalance = account.getBalance().add(request.getAmount());
+        account.setBalance(newBalance);
+
+        Account updatedAccount = accountRepository.save(account);
+        logger.info("Account {} credited successfully. New balance: {}", accountNumber, updatedAccount.getBalance());
+        return mapToAccountResponse(updatedAccount);
+    }
+
+    @Transactional
+    public AccountResponse debitAccount(String accountNumber, TransactionRequest request) {
+        logger.info("Attempting to debit account number: {} with amount: {}", accountNumber, request.getAmount());
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException("Account not found with number: " + accountNumber));
+
+        if (account.getStatus() != AccountStatus.ACTIVE) {
+            logger.error("Cannot debit account {} because it is not active. Current status: {}", accountNumber, account.getStatus());
+            throw new IllegalStateException("Account must be ACTIVE to be debited. Current state: " + account.getStatus());
+        }
+
+        // Check if there are sufficient funds
+        if (account.getBalance().compareTo(request.getAmount()) < 0) {
+            logger.error("Insufficient funds in account {}. Current balance: {}, Requested amount: {}", 
+                accountNumber, account.getBalance(), request.getAmount());
+            throw new InsufficientFundsException("Insufficient funds for this transaction. Current balance: " + account.getBalance());
+        }
+
+        // Subtract the amount from the current balance
+        BigDecimal newBalance = account.getBalance().subtract(request.getAmount());
+        account.setBalance(newBalance);
+
+        Account updatedAccount = accountRepository.save(account);
+        logger.info("Account {} debited successfully. New balance: {}", accountNumber, updatedAccount.getBalance());
+        return mapToAccountResponse(updatedAccount);
+    }
+
+    @Transactional(readOnly = true)
+    public AccountStatusResponse getAccountStatus(String accountNumber) {
+        logger.debug("Fetching status for account number: {}", accountNumber);
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException("Account not found with number: " + accountNumber));
+
+        logger.debug("Status for account number {}: {}", accountNumber, account.getStatus());
+        return new AccountStatusResponse(accountNumber, account.getStatus());
+    }
 
     private AccountResponse mapToAccountResponse(Account account) {
         AccountResponse response = new AccountResponse();
