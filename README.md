@@ -11,6 +11,7 @@
 - RabbitMQ (messaging)
 - PostgreSQL (databases)
 - Docker Compose (deployment)
+- Redis (Caching)
 
 ## 🏛️ Architecture Diagram
 ![Architecture Diagram](./Architecture.png)
