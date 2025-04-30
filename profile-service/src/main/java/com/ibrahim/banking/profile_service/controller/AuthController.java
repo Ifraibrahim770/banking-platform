@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin(origins = "*", maxAge = 3600) // Configure CORS as needed
+@CrossOrigin(origins = "*", maxAge = 3600) // might need to adjust this later idk
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -24,7 +24,7 @@ public class AuthController {
             JwtResponse jwtResponse = authService.authenticateUser(loginRequest);
             return ResponseEntity.ok(jwtResponse);
         } catch (Exception e) {
-            // Consider more specific exception handling and appropriate status codes
+            // should probly use better error handling here lol
             return ResponseEntity.status(401).body(new MessageResponse("Authentication failed: " + e.getMessage()));
         }
     }
@@ -37,7 +37,7 @@ public class AuthController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         } catch (RuntimeException e) {
-            // Catch potential RuntimeExceptions from role finding
+            // fix this later, role errors are annoyin
              return ResponseEntity.status(500).body(new MessageResponse("Error during registration: " + e.getMessage()));
         }
     }

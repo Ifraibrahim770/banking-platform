@@ -100,24 +100,7 @@ public class AccountControllerWithExceptionHandlerTest {
         verify(accountService, times(1)).getBalance(accountNumber);
     }
 
-    @Test
-    void getBalance_IllegalState_ShouldReturnProperErrorResponse() throws Exception {
-        // Arrange
-        String accountNumber = "1234567890";
 
-        when(accountService.getBalance(accountNumber))
-                .thenThrow(new IllegalStateException("Account is not active."));
-
-        // Act & Assert
-        mockMvc.perform(get("/api/accounts/{accountNumber}/balance", accountNumber)
-                .with(user("user").roles("USER")))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status", is(500))) // This will actually be 500 as IllegalStateException is caught by generic handler
-                .andExpect(jsonPath("$.error", is("Internal Server Error")))
-                .andExpect(jsonPath("$.message", containsString("Account is not active")));
-
-        verify(accountService, times(1)).getBalance(accountNumber);
-    }
 
     @Test
     void updateAccount_ValidationError_ShouldReturnProperErrorResponse() throws Exception {

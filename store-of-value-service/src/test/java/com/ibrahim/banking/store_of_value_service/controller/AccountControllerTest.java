@@ -48,12 +48,12 @@ public class AccountControllerTest {
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(accountController).build();
         objectMapper = new ObjectMapper();
-        objectMapper.findAndRegisterModules(); // Required for LocalDateTime serialization
+        objectMapper.findAndRegisterModules(); // need this for datetime stuff
     }
 
     @Test
     void createAccount_Success() throws Exception {
-        // Arrange
+        // setup
         CreateAccountRequest request = new CreateAccountRequest();
         request.setProfileId("profile123");
         request.setAccountType(AccountType.SAVINGS);
@@ -70,9 +70,9 @@ public class AccountControllerTest {
 
         when(accountService.createAccount(any(CreateAccountRequest.class))).thenReturn(response);
 
-        // Act & Assert
+        // do it & check
         mockMvc.perform(post("/api/accounts")
-                .with(user("admin").roles("ADMIN")) // Mock admin user
+                .with(user("admin").roles("ADMIN")) // fake admin user
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -87,11 +87,11 @@ public class AccountControllerTest {
 
     @Test
     void createAccount_ValidationFailure() throws Exception {
-        // Arrange
+        // setup
         CreateAccountRequest request = new CreateAccountRequest();
-        // Missing required fields
+        // missing stuff
 
-        // Act & Assert
+        // do it & check
         mockMvc.perform(post("/api/accounts")
                 .with(user("admin").roles("ADMIN"))
                 .with(csrf())
@@ -106,7 +106,7 @@ public class AccountControllerTest {
 
     @Test
     void updateAccount_Success() throws Exception {
-        // Arrange
+        // setup
         String accountNumber = "1234567890";
         UpdateAccountRequest request = new UpdateAccountRequest();
         request.setAccountType(AccountType.CURRENT);
@@ -115,7 +115,7 @@ public class AccountControllerTest {
         response.setId(1L);
         response.setAccountNumber(accountNumber);
         response.setProfileId("profile123");
-        response.setAccountType(AccountType.CURRENT); // Updated type
+        response.setAccountType(AccountType.CURRENT); // changed to CURRENT
         response.setBalance(BigDecimal.ZERO);
         response.setStatus(AccountStatus.ACTIVE);
         response.setCreatedAt(LocalDateTime.now());
@@ -123,7 +123,7 @@ public class AccountControllerTest {
 
         when(accountService.updateAccount(eq(accountNumber), any(UpdateAccountRequest.class))).thenReturn(response);
 
-        // Act & Assert
+        // do it & check
         mockMvc.perform(put("/api/accounts/{accountNumber}", accountNumber)
                 .with(user("admin").roles("ADMIN"))
                 .with(csrf())
@@ -138,7 +138,7 @@ public class AccountControllerTest {
 
     @Test
     void updateAccount_NotFound() throws Exception {
-        // Arrange
+        // setup
         String accountNumber = "nonexistent";
         UpdateAccountRequest request = new UpdateAccountRequest();
         request.setAccountType(AccountType.CURRENT);
@@ -146,7 +146,7 @@ public class AccountControllerTest {
         when(accountService.updateAccount(eq(accountNumber), any(UpdateAccountRequest.class)))
                 .thenThrow(new AccountNotFoundException("Account not found with number: " + accountNumber));
 
-        // Act & Assert
+        // do it & check
         mockMvc.perform(put("/api/accounts/{accountNumber}", accountNumber)
                 .with(user("admin").roles("ADMIN"))
                 .with(csrf())
@@ -159,13 +159,13 @@ public class AccountControllerTest {
 
     @Test
     void getBalance_Success() throws Exception {
-        // Arrange
+        // setup
         String accountNumber = "1234567890";
         BigDecimal balance = new BigDecimal("100.00");
 
         when(accountService.getBalance(accountNumber)).thenReturn(balance);
 
-        // Act & Assert
+        // do it & check
         mockMvc.perform(get("/api/accounts/{accountNumber}/balance", accountNumber)
                 .with(user("user").roles("USER")))
                 .andExpect(status().isOk())
@@ -178,13 +178,13 @@ public class AccountControllerTest {
 
     @Test
     void getBalance_AccountNotFound() throws Exception {
-        // Arrange
+        // setup
         String accountNumber = "nonexistent";
 
         when(accountService.getBalance(accountNumber))
                 .thenThrow(new AccountNotFoundException("Account not found with number: " + accountNumber));
 
-        // Act & Assert
+        // do it & check
         mockMvc.perform(get("/api/accounts/{accountNumber}/balance", accountNumber)
                 .with(user("user").roles("USER")))
                 .andExpect(status().isNotFound());
@@ -197,7 +197,7 @@ public class AccountControllerTest {
 
     @Test
     void activateAccount_Success() throws Exception {
-        // Arrange
+        // setup
         String accountNumber = "1234567890";
 
         AccountResponse response = new AccountResponse();
@@ -206,13 +206,13 @@ public class AccountControllerTest {
         response.setProfileId("profile123");
         response.setAccountType(AccountType.SAVINGS);
         response.setBalance(BigDecimal.ZERO);
-        response.setStatus(AccountStatus.ACTIVE); // Activated status
+        response.setStatus(AccountStatus.ACTIVE); // active now
         response.setCreatedAt(LocalDateTime.now());
         response.setUpdatedAt(LocalDateTime.now());
 
         when(accountService.activateAccount(accountNumber)).thenReturn(response);
 
-        // Act & Assert
+        // do it & check
         mockMvc.perform(patch("/api/accounts/{accountNumber}/activate", accountNumber)
                 .with(user("admin").roles("ADMIN"))
                 .with(csrf()))
@@ -225,7 +225,7 @@ public class AccountControllerTest {
 
     @Test
     void activateAccount_AlreadyActive() throws Exception {
-        // Arrange
+        // setup
         String accountNumber = "1234567890";
 
         AccountResponse response = new AccountResponse();
@@ -234,13 +234,13 @@ public class AccountControllerTest {
         response.setProfileId("profile123");
         response.setAccountType(AccountType.SAVINGS);
         response.setBalance(BigDecimal.ZERO);
-        response.setStatus(AccountStatus.ACTIVE); // Already active
+        response.setStatus(AccountStatus.ACTIVE); // already on
         response.setCreatedAt(LocalDateTime.now());
         response.setUpdatedAt(LocalDateTime.now());
 
         when(accountService.activateAccount(accountNumber)).thenReturn(response);
 
-        // Act & Assert
+        // do it & check
         mockMvc.perform(patch("/api/accounts/{accountNumber}/activate", accountNumber)
                 .with(user("admin").roles("ADMIN"))
                 .with(csrf()))

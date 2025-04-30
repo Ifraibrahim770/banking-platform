@@ -39,7 +39,7 @@ public class AccountController {
     }
 
     @GetMapping("/{accountNumber}/balance")
-    @PreAuthorize("hasAuthority('ROLE_USER')") // Only users can check balance as per requirement
+    @PreAuthorize("hasAuthority('ROLE_USER')") // users only endpoint
     public ResponseEntity<BigDecimal> getBalance(@PathVariable String accountNumber) {
         BigDecimal balance = accountService.getBalance(accountNumber);
         return ResponseEntity.ok(balance);

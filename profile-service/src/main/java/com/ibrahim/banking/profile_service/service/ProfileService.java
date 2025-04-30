@@ -26,7 +26,7 @@ public class ProfileService {
     @Autowired
     private UserRepository userRepository;
 
-    // Helper method to get the current user entity
+
     private User getCurrentUserEntity() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() || !(authentication.getPrincipal() instanceof UserDetails)) {
@@ -37,7 +37,7 @@ public class ProfileService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + userDetails.getUsername()));
     }
 
-    // Helper method to map User to UserProfileResponse
+    // converts User obj to ProfileResponse obj..could be refactored later
     private UserProfileResponse mapUserToProfileResponse(User user) {
         List<String> roles = user.getRoles().stream()
                 .map(role -> role.getName().name())
@@ -53,23 +53,23 @@ public class ProfileService {
         );
     }
 
-    @Transactional(readOnly = true) // Read-only transaction for fetching data
+    @Transactional(readOnly = true)
     public UserProfileResponse getCurrentUserProfile() {
         User user = getCurrentUserEntity();
         logger.info("Fetching profile for user: {}", user.getUsername());
         return mapUserToProfileResponse(user);
     }
 
-    @Transactional // Read-write transaction for updating data
+    @Transactional
     public UserProfileResponse updateCurrentUserProfile(ProfileUpdateRequest updateRequest) {
         User user = getCurrentUserEntity();
         logger.info("Updating profile for user: {}", user.getUsername());
 
         boolean updated = false;
 
-        // Update email if provided and different
+
         if (StringUtils.hasText(updateRequest.getEmail()) && !updateRequest.getEmail().equals(user.getEmail())) {
-            // Check if the new email is already taken by another user
+
             if (userRepository.existsByEmail(updateRequest.getEmail())) {
                 throw new IllegalArgumentException("Error: Email is already in use!");
             }
@@ -78,28 +78,28 @@ public class ProfileService {
             updated = true;
         }
 
-        // Update first name if provided
+        // update first name if provided n different
         if (StringUtils.hasText(updateRequest.getFirstName()) && !updateRequest.getFirstName().equals(user.getFirstName())) {
             user.setFirstName(updateRequest.getFirstName());
             logger.debug("Updating firstName for user {}", user.getUsername());
             updated = true;
         }
 
-        // Update last name if provided
+        // do same for last name
         if (StringUtils.hasText(updateRequest.getLastName()) && !updateRequest.getLastName().equals(user.getLastName())) {
             user.setLastName(updateRequest.getLastName());
             logger.debug("Updating lastName for user {}", user.getUsername());
             updated = true;
         }
 
-        // Save if any changes were made
+        // only save to DB if something changed
         if (updated) {
             User savedUser = userRepository.save(user);
             logger.info("Profile updated successfully for user: {}", savedUser.getUsername());
             return mapUserToProfileResponse(savedUser);
         } else {
             logger.info("No profile changes detected for user: {}", user.getUsername());
-            // Return current profile if no changes
+            // just return what we already have
             return mapUserToProfileResponse(user);
         }
     }

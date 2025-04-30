@@ -39,8 +39,8 @@ public class AccountService {
         newAccount.setAccountNumber(newAccountNumber);
         newAccount.setProfileId(request.getProfileId());
         newAccount.setAccountType(request.getAccountType());
-        newAccount.setBalance(BigDecimal.ZERO); // Start with zero balance
-        newAccount.setStatus(AccountStatus.PENDING_ACTIVATION); // Initial status
+        newAccount.setBalance(BigDecimal.ZERO); // start with 0
+        newAccount.setStatus(AccountStatus.PENDING_ACTIVATION); // set initial status
 
         Account savedAccount = accountRepository.save(newAccount);
         logger.info("Account created successfully with ID: {} and Number: {}", savedAccount.getId(), savedAccount.getAccountNumber());
@@ -53,7 +53,7 @@ public class AccountService {
         Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found with number: " + accountNumber));
 
-       //Check if account is active
+       // gotta check if account is active first
         if (account.getStatus() != AccountStatus.ACTIVE) {
             throw new IllegalStateException("Account is not active.");
          }
@@ -109,7 +109,7 @@ public class AccountService {
         Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found with number: " + accountNumber));
 
-        // Add checks? e.g., cannot update if CLOSED?
+        // cant update closed accounts duh
         if (account.getStatus() == AccountStatus.CLOSED) {
              logger.error("Cannot update account {} because it is closed.", accountNumber);
              throw new IllegalStateException("Cannot update a closed account.");
@@ -134,7 +134,7 @@ public class AccountService {
             throw new IllegalStateException("Account must be ACTIVE to be credited. Current state: " + account.getStatus());
         }
 
-        // Add the amount to the current balance
+        // add money to balance
         BigDecimal newBalance = account.getBalance().add(request.getAmount());
         account.setBalance(newBalance);
 
@@ -154,14 +154,14 @@ public class AccountService {
             throw new IllegalStateException("Account must be ACTIVE to be debited. Current state: " + account.getStatus());
         }
 
-        // Check if there are sufficient funds
+        // check if enough money
         if (account.getBalance().compareTo(request.getAmount()) < 0) {
             logger.error("Insufficient funds in account {}. Current balance: {}, Requested amount: {}", 
                 accountNumber, account.getBalance(), request.getAmount());
             throw new InsufficientFundsException("Insufficient funds for this transaction. Current balance: " + account.getBalance());
         }
 
-        // Subtract the amount from the current balance
+        // take out money from balance
         BigDecimal newBalance = account.getBalance().subtract(request.getAmount());
         account.setBalance(newBalance);
 
@@ -193,14 +193,14 @@ public class AccountService {
         return response;
     }
 
-    // --- Helper method for generating account number ---
+    // helper for making account numbers
     private String generateUniqueAccountNumber() {
         String accountNumber;
         do {
 
             long number = ThreadLocalRandom.current().nextLong(1_000_000_000L, 10_000_000_000L);
             accountNumber = String.valueOf(number);
-        } while (accountRepository.findByAccountNumber(accountNumber).isPresent()); // Check for uniqueness
+        } while (accountRepository.findByAccountNumber(accountNumber).isPresent()); // make sure its unique
         return accountNumber;
     }
 } 

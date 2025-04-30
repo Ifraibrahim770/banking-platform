@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Define a custom console appender pattern -->
+    <appender name="CONSOLE_CUSTOM" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- Example Pattern: 2024-07-29 10:30:00.123 INFO [main] c.i.b.e.service.EventService : Event processed -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %-40.40logger{39} : %msg%n%throwable</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Application specific logging levels -->
+    <logger name="com.ibrahim.banking.events-service" level="INFO"/>
+
+    <!-- Hibernate logging levels -->
+    <logger name="org.hibernate.SQL" level="WARN"/>
+    <logger name="org.hibernate.type.descriptor.sql" level="WARN"/>
+
+    <!-- Root logger configuration -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE_CUSTOM" />
+    </root>
+
+    <!-- Profile specific configuration -->
+    <springProfile name="dev">
+        <logger name="com.ibrahim.banking.events-service" level="DEBUG"/>
+    </springProfile>
+
+    <springProfile name="prod">
+        <logger name="com.ibrahim.banking.events-service" level="INFO"/>
+        <logger name="org.hibernate.SQL" level="OFF"/>
+        <logger name="org.hibernate.type.descriptor.sql" level="OFF"/>
+    </springProfile>
+
+</configuration> 

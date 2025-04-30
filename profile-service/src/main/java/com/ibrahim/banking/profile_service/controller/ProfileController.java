@@ -11,7 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin(origins = "*", maxAge = 3600) // Configure CORS as needed
+@CrossOrigin(origins = "*", maxAge = 3600) // configure CORS, change if neeed
 @RestController
 @RequestMapping("/api/profile")
 public class ProfileController {
@@ -20,14 +20,14 @@ public class ProfileController {
     private ProfileService profileService;
 
     @GetMapping("/me")
-    @PreAuthorize("isAuthenticated()") // Explicitly require authentication
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserProfileResponse> getCurrentUserProfile() {
         UserProfileResponse profile = profileService.getCurrentUserProfile();
         return ResponseEntity.ok(profile);
     }
 
     @PutMapping("/me")
-    @PreAuthorize("isAuthenticated()") // Explicitly require authentication
+    @PreAuthorize("isAuthenticated()") // user needs 2 be authenticated
     public ResponseEntity<?> updateCurrentUserProfile(@Valid @RequestBody ProfileUpdateRequest updateRequest) {
         try {
             UserProfileResponse updatedProfile = profileService.updateCurrentUserProfile(updateRequest);
@@ -35,13 +35,13 @@ public class ProfileController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         } catch (Exception e) {
-             // Catch other potential errors (e.g., user not found unexpectedly)
+             // catch any weird errors, like if user disappears somehow
              return ResponseEntity.status(500).body(new MessageResponse("Error updating profile: " + e.getMessage()));
         }
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')") // Restrict to admins for security
+    @PreAuthorize("hasRole('ADMIN')") // admin only for security reasons!
     public ResponseEntity<?> getUserProfileById(@PathVariable Long id) {
         try {
             UserProfileResponse profile = profileService.getUserProfileById(id);
@@ -52,6 +52,4 @@ public class ProfileController {
             return ResponseEntity.status(500).body(new MessageResponse("Error fetching profile: " + e.getMessage()));
         }
     }
-
-    // Optional: Add other endpoints like DELETE /me or POST /me/change-password if needed
 } 
