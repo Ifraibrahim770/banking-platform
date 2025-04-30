@@ -60,6 +60,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         // these endponts r open to everyone
                         .requestMatchers("/api/auth/**").permitAll()
+                        // Swagger UI and API docs endpoints
+                        .requestMatchers("/swagger-ui.html").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-resources/**").permitAll()
+                        .requestMatchers("/webjars/**").permitAll()
                         // everything else needs auth
                         .anyRequest().authenticated()
                 );

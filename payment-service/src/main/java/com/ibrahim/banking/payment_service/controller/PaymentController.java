@@ -4,6 +4,13 @@ import com.ibrahim.banking.payment_service.exception.InvalidTransactionException
 import com.ibrahim.banking.payment_service.exception.PaymentProcessingException;
 import com.ibrahim.banking.payment_service.exception.ResourceNotFoundException;
 import com.ibrahim.banking.payment_service.service.TransactionLoggingService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +24,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/payments")
+@Tag(name = "Payments", description = "The Payment API for processing payments between accounts")
 public class PaymentController {
 
     private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
@@ -24,11 +32,17 @@ public class PaymentController {
     @Autowired
     private TransactionLoggingService transactionLoggingService;
     
+    @Operation(summary = "Process a payment", description = "Processes a payment between accounts")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Payment processed successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid input data"),
+        @ApiResponse(responseCode = "500", description = "Server error during payment processing")
+    })
     @PostMapping("/process")
     public ResponseEntity<Map<String, Object>> processPayment(
-            @RequestParam String fromAccount,
-            @RequestParam String toAccount,
-            @RequestParam BigDecimal amount) {
+            @Parameter(description = "Source account") @RequestParam String fromAccount,
+            @Parameter(description = "Destination account") @RequestParam String toAccount,
+            @Parameter(description = "Amount to transfer") @RequestParam BigDecimal amount) {
         
         logger.info("Payment request received: from={}, to={}, amount={}", fromAccount, toAccount, amount);
         
@@ -59,8 +73,16 @@ public class PaymentController {
         }
     }
     
+    @Operation(summary = "Get payment details", description = "Retrieves details of a specific payment transaction")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved payment details"),
+        @ApiResponse(responseCode = "400", description = "Invalid transaction ID format"),
+        @ApiResponse(responseCode = "404", description = "Transaction not found"),
+        @ApiResponse(responseCode = "500", description = "Server error")
+    })
     @GetMapping("/{transactionId}")
-    public ResponseEntity<Map<String, Object>> getPaymentDetails(@PathVariable String transactionId) {
+    public ResponseEntity<Map<String, Object>> getPaymentDetails(
+            @Parameter(description = "ID of the transaction to retrieve") @PathVariable String transactionId) {
         logger.info("Fetching details for transaction: {}", transactionId);
         
         // Simulate looking up a transaction

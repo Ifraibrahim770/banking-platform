@@ -1,4 +1,4 @@
-package com.ibrahim.banking.store_of_value_service.security;
+package com.ibrahim.banking.events_service.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -12,30 +12,30 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // Enables method-level security (e.g., @PreAuthorize)
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
+    
+    @Autowired
+    private UserDetailsServiceImpl userDetailsService;
 
-    // Define AuthTokenFilter as a Bean
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
         return new AuthTokenFilter();
     }
 
-    // Expose AuthenticationManager as a Bean
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
 
-    // Bean for hashing passwords
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -44,20 +44,17 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Disable CSRF protection as we are using JWT and it's stateless
                 .csrf(csrf -> csrf.disable())
-                // Configure exception handling (for 401 Unauthorized)
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(unauthorizedHandler)
                         .accessDeniedHandler(new AccessDeniedHandlerImpl())
                 )
-                // Configure session management to be stateless, as we use JWT
+                // Using stateless sessions for JWT
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                // Configure authorization rules
                 .authorizeHttpRequests(authz -> authz
-                        // Allow public access to actuator endpoints
+                        // Actuator endpoints
                         .requestMatchers("/actuator/**").permitAll()
                         // Swagger UI and API docs endpoints
                         .requestMatchers("/swagger-ui.html").permitAll()
@@ -73,4 +70,4 @@ public class SecurityConfig {
 
         return http.build();
     }
-}
+} 
