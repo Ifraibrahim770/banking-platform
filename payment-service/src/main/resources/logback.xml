@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Define a custom console appender pattern -->
+    <appender name="CONSOLE_CUSTOM" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- Example Pattern: 2024-07-29 10:30:00.123 INFO [main] c.i.b.p.service.AuthService : User authenticated -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %-40.40logger{39} : %msg%n%throwable</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Application specific logging levels -->
+    <logger name="com.ibrahim.banking.payment_service" level="INFO"/>
+
+    <!-- Hibernate logging levels -->
+    <!-- Set to WARN or OFF to disable SQL statement logging -->
+    <logger name="org.hibernate.SQL" level="WARN"/>
+    <!-- Set to WARN or OFF to disable SQL parameter logging -->
+    <logger name="org.hibernate.type.descriptor.sql" level="WARN"/>
+
+    <!-- Root logger configuration - Use the custom console appender -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE_CUSTOM" />
+    </root>
+
+    <!-- Profile specific configuration -->
+    <springProfile name="dev">
+        <logger name="com.ibrahim.banking.payment_service" level="DEBUG"/>
+    </springProfile>
+
+    <springProfile name="prod">
+        <logger name="com.ibrahim.banking.payment_service" level="INFO"/>
+        <logger name="org.hibernate.SQL" level="OFF"/>
+        <logger name="org.hibernate.type.descriptor.sql" level="OFF"/>
+    </springProfile>
+
+</configuration> 

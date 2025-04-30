@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Define a custom console appender pattern -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- Pattern: 2024-07-29 10:30:00.123 INFO [main] c.i.b.s.service.AccountService : Account activated -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %-40.40logger{39} : %msg%n%throwable</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Application specific logging levels -->
+    <logger name="com.ibrahim.banking.store_of_value_service" level="INFO"/>
+    
+    <!-- Show more detailed logs for account operations in dev environment -->
+    <springProfile name="dev">
+        <logger name="com.ibrahim.banking.store_of_value_service.service.AccountService" level="DEBUG"/>
+    </springProfile>
+
+    <!-- Hibernate logging levels -->
+    <!-- Set to WARN to reduce SQL statement logging noise -->
+    <logger name="org.hibernate.SQL" level="WARN"/>
+    <!-- Set to WARN to disable SQL parameter logging -->
+    <logger name="org.hibernate.type.descriptor.sql" level="WARN"/>
+    <!-- Reduce Spring Framework noise -->
+    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="org.springframework.security" level="INFO"/>
+    <logger name="org.apache.catalina" level="WARN"/>
+
+    <!-- Root logger configuration - console only -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
+
+    <!-- Environment-specific configurations -->
+    <springProfile name="prod">
+        <logger name="com.ibrahim.banking.store_of_value_service" level="INFO"/>
+        <logger name="org.hibernate.SQL" level="OFF"/>
+        <logger name="org.hibernate.type.descriptor.sql" level="OFF"/>
+    </springProfile>
+
+</configuration> 

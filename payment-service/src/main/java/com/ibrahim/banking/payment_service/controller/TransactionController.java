@@ -3,6 +3,15 @@ package com.ibrahim.banking.payment_service.controller;
 import com.ibrahim.banking.payment_service.dto.*;
 import com.ibrahim.banking.payment_service.model.Transaction;
 import com.ibrahim.banking.payment_service.service.TransactionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -17,6 +26,8 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/transactions")
+@Tag(name = "Transactions", description = "API for managing financial transactions")
+@SecurityRequirement(name = "Bearer Authentication")
 public class TransactionController {
     private static final Logger logger = LoggerFactory.getLogger(TransactionController.class);
     
@@ -26,8 +37,18 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
     
+    @Operation(summary = "Create deposit transaction", description = "Creates a new deposit transaction for an account")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Deposit transaction created successfully", 
+                     content = @Content(schema = @Schema(implementation = TransactionResponseDto.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input data", 
+                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "500", description = "Server error", 
+                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
+    })
     @PostMapping("/deposit")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
     public ResponseEntity<?> createDepositTransaction(@RequestBody DepositRequestDto request) {
         try {
             // Validate amount
@@ -63,8 +84,18 @@ public class TransactionController {
         }
     }
     
+    @Operation(summary = "Create withdrawal transaction", description = "Creates a new withdrawal transaction from an account")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Withdrawal transaction created successfully", 
+                     content = @Content(schema = @Schema(implementation = TransactionResponseDto.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input data", 
+                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "500", description = "Server error", 
+                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
+    })
     @PostMapping("/withdrawal")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
     public ResponseEntity<?> createWithdrawalTransaction(@RequestBody WithdrawalRequestDto request) {
         try {
             // Validate amount
@@ -100,8 +131,18 @@ public class TransactionController {
         }
     }
     
+    @Operation(summary = "Create transfer transaction", description = "Creates a new transfer transaction between accounts")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Transfer transaction created successfully", 
+                     content = @Content(schema = @Schema(implementation = TransactionResponseDto.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input data", 
+                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "500", description = "Server error", 
+                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
+    })
     @PostMapping("/transfer")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
     public ResponseEntity<?> createTransferTransaction(@RequestBody TransferRequestDto request) {
         try {
             // Validate amount
@@ -144,9 +185,20 @@ public class TransactionController {
         }
     }
     
+    @Operation(summary = "Get transaction by reference", description = "Retrieves a specific transaction by its reference")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved transaction", 
+                     content = @Content(schema = @Schema(implementation = TransactionDetailsDto.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "404", description = "Transaction not found", 
+                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))),
+        @ApiResponse(responseCode = "500", description = "Server error", 
+                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
+    })
     @GetMapping("/{transactionReference}")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
-    public ResponseEntity<?> getTransactionByReference(@PathVariable String transactionReference) {
+    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
+    public ResponseEntity<?> getTransactionByReference(
+            @Parameter(description = "Reference of the transaction to retrieve") @PathVariable String transactionReference) {
         try {
             Optional<Transaction> optionalTransaction = transactionService.getTransactionByReference(transactionReference);
             
@@ -165,9 +217,18 @@ public class TransactionController {
         }
     }
     
+    @Operation(summary = "Get transactions by user ID", description = "Retrieves all transactions for a specific user")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved transactions", 
+                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = TransactionDetailsDto.class)))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "500", description = "Server error", 
+                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
+    })
     @GetMapping("/user/{userId}")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
-    public ResponseEntity<?> getTransactionsByUserId(@PathVariable Long userId) {
+    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
+    public ResponseEntity<?> getTransactionsByUserId(
+            @Parameter(description = "ID of the user") @PathVariable Long userId) {
         try {
             List<Transaction> transactions = transactionService.getTransactionsByUserId(userId);
             List<TransactionDetailsDto> transactionDetails = transactions.stream()
@@ -183,9 +244,18 @@ public class TransactionController {
         }
     }
     
+    @Operation(summary = "Get transactions by account ID", description = "Retrieves all transactions for a specific account")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved transactions", 
+                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = TransactionDetailsDto.class)))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "500", description = "Server error", 
+                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
+    })
     @GetMapping("/account/{accountId}")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
-    public ResponseEntity<?> getTransactionsByAccountId(@PathVariable Long accountId) {
+    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
+    public ResponseEntity<?> getTransactionsByAccountId(
+            @Parameter(description = "ID of the account") @PathVariable Long accountId) {
         try {
             List<Transaction> transactions = transactionService.getTransactionsByAccountId(accountId);
             List<TransactionDetailsDto> transactionDetails = transactions.stream()

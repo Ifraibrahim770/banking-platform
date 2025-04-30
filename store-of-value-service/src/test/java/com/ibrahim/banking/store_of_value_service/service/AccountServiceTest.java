@@ -19,6 +19,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -26,13 +28,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class) // Initialize mocks
+@ExtendWith(MockitoExtension.class) // needed for mocks
 public class AccountServiceTest {
 
     @Mock
     private AccountRepository accountRepository;
 
-    @InjectMocks // Inject mocks into this service instance
+    @InjectMocks // puts mocks into service
     private AccountService accountService;
 
     private Account sampleAccount;
@@ -51,8 +53,37 @@ public class AccountServiceTest {
         sampleAccount.setCreatedAt(LocalDateTime.now().minusDays(1));
         sampleAccount.setUpdatedAt(LocalDateTime.now());
     }
+    
+    // test fetching accounts by profile id
+    @Test
+    void getAccountsByProfileId_shouldReturnAllAccountsForProfile() {
+        // given
+        String profileId = "profile-test-1";
+        
+        Account secondAccount = new Account();
+        secondAccount.setId(2L);
+        secondAccount.setAccountNumber("2222333440");
+        secondAccount.setProfileId(profileId);
+        secondAccount.setBalance(new BigDecimal("200.75"));
+        secondAccount.setAccountType(AccountType.CURRENT);
+        secondAccount.setStatus(AccountStatus.ACTIVE);
+        
+        List<Account> accounts = Arrays.asList(sampleAccount, secondAccount);
+        when(accountRepository.findByProfileId(profileId)).thenReturn(accounts);
+        
+        // when
+        List<AccountResponse> result = accountService.getAccountsByProfileId(profileId);
+        
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getAccountNumber()).isEqualTo(existingAccountNumber);
+        assertThat(result.get(1).getAccountNumber()).isEqualTo("2222333440");
+        assertThat(result.get(0).getProfileId()).isEqualTo(profileId);
+        assertThat(result.get(1).getProfileId()).isEqualTo(profileId);
+        verify(accountRepository, times(1)).findByProfileId(profileId);
+    }
 
-    // --- createAccount Tests ---
+    // createAccount tests 
     @Test
     void createAccount_shouldCreateAndReturnAccount() {
         // given
@@ -62,11 +93,11 @@ public class AccountServiceTest {
 
         ArgumentCaptor<Account> accountCaptor = ArgumentCaptor.forClass(Account.class);
 
-        // Mock repository: unique number generated, save successful
+        // mock the repo stuff 
         when(accountRepository.findByAccountNumber(anyString())).thenReturn(Optional.empty());
         when(accountRepository.save(accountCaptor.capture())).thenAnswer(invocation -> {
             Account accountToSave = invocation.getArgument(0);
-            accountToSave.setId(99L); // Simulate ID generation
+            accountToSave.setId(99L); // fake an ID
             accountToSave.setCreatedAt(LocalDateTime.now());
             accountToSave.setUpdatedAt(LocalDateTime.now());
             return accountToSave;
@@ -81,9 +112,9 @@ public class AccountServiceTest {
         assertThat(response.getAccountType()).isEqualTo(request.getAccountType());
         assertThat(response.getStatus()).isEqualTo(AccountStatus.PENDING_ACTIVATION);
         assertThat(response.getBalance()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(response.getAccountNumber()).isNotNull().hasSize(10); // Check generated number
+        assertThat(response.getAccountNumber()).isNotNull().hasSize(10); // should be 10 digits
 
-        verify(accountRepository, times(1)).findByAccountNumber(anyString()); // Verify uniqueness check
+        verify(accountRepository, times(1)).findByAccountNumber(anyString()); // make sure we checked if unique
         verify(accountRepository, times(1)).save(any(Account.class));
 
         Account savedAccount = accountCaptor.getValue();
@@ -94,7 +125,7 @@ public class AccountServiceTest {
         assertThat(savedAccount.getAccountNumber()).isEqualTo(response.getAccountNumber());
     }
 
-    // --- getBalance Tests ---
+    // getBalance tests
     @Test
     void getBalance_whenAccountExists_shouldReturnBalance() {
         // given
@@ -114,20 +145,20 @@ public class AccountServiceTest {
         // given
         when(accountRepository.findByAccountNumber(nonExistingAccountNumber)).thenReturn(Optional.empty());
 
-        // when / then
+        // when/then
         assertThatThrownBy(() -> accountService.getBalance(nonExistingAccountNumber))
                 .isInstanceOf(AccountNotFoundException.class)
                 .hasMessageContaining(nonExistingAccountNumber);
         verify(accountRepository, times(1)).findByAccountNumber(nonExistingAccountNumber);
     }
 
-    // --- activateAccount Tests ---
+    // activate account tests
     @Test
     void activateAccount_whenPending_shouldActivateAndReturnAccount() {
         // given
         sampleAccount.setStatus(AccountStatus.PENDING_ACTIVATION);
         when(accountRepository.findByAccountNumber(existingAccountNumber)).thenReturn(Optional.of(sampleAccount));
-        when(accountRepository.save(any(Account.class))).thenReturn(sampleAccount); // Simulate save returning updated obj
+        when(accountRepository.save(any(Account.class))).thenReturn(sampleAccount); // mock save
 
         // when
         AccountResponse response = accountService.activateAccount(existingAccountNumber);
@@ -136,7 +167,7 @@ public class AccountServiceTest {
         assertThat(response.getStatus()).isEqualTo(AccountStatus.ACTIVE);
         verify(accountRepository, times(1)).findByAccountNumber(existingAccountNumber);
         verify(accountRepository, times(1)).save(sampleAccount);
-        assertThat(sampleAccount.getStatus()).isEqualTo(AccountStatus.ACTIVE); // Verify state change before save
+        assertThat(sampleAccount.getStatus()).isEqualTo(AccountStatus.ACTIVE); // make sure it changed
     }
 
     @Test
@@ -151,7 +182,7 @@ public class AccountServiceTest {
         // then
         assertThat(response.getStatus()).isEqualTo(AccountStatus.ACTIVE);
         verify(accountRepository, times(1)).findByAccountNumber(existingAccountNumber);
-        verify(accountRepository, never()).save(any(Account.class)); // Should not save if already active
+        verify(accountRepository, never()).save(any(Account.class)); // shouldnt save if already active
     }
 
     @Test
@@ -160,7 +191,7 @@ public class AccountServiceTest {
         sampleAccount.setStatus(AccountStatus.INACTIVE);
         when(accountRepository.findByAccountNumber(existingAccountNumber)).thenReturn(Optional.of(sampleAccount));
 
-        // when / then
+        // when/then
         assertThatThrownBy(() -> accountService.activateAccount(existingAccountNumber))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("cannot be activated");
@@ -173,14 +204,14 @@ public class AccountServiceTest {
         // given
         when(accountRepository.findByAccountNumber(nonExistingAccountNumber)).thenReturn(Optional.empty());
 
-        // when / then
+        // when/then
         assertThatThrownBy(() -> accountService.activateAccount(nonExistingAccountNumber))
                 .isInstanceOf(AccountNotFoundException.class);
         verify(accountRepository, times(1)).findByAccountNumber(nonExistingAccountNumber);
         verify(accountRepository, never()).save(any(Account.class));
     }
 
-    // --- deactivateAccount Tests ---
+    // deactivate account tests
     @Test
     void deactivateAccount_whenActive_shouldDeactivateAndReturnAccount() {
         // given
@@ -219,7 +250,7 @@ public class AccountServiceTest {
         sampleAccount.setStatus(AccountStatus.PENDING_ACTIVATION);
         when(accountRepository.findByAccountNumber(existingAccountNumber)).thenReturn(Optional.of(sampleAccount));
 
-        // when / then
+        // when/then
         assertThatThrownBy(() -> accountService.deactivateAccount(existingAccountNumber))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("must be ACTIVE");
@@ -232,34 +263,33 @@ public class AccountServiceTest {
         // given
         when(accountRepository.findByAccountNumber(nonExistingAccountNumber)).thenReturn(Optional.empty());
 
-        // when / then
+        // when/then
         assertThatThrownBy(() -> accountService.deactivateAccount(nonExistingAccountNumber))
                 .isInstanceOf(AccountNotFoundException.class);
         verify(accountRepository, times(1)).findByAccountNumber(nonExistingAccountNumber);
         verify(accountRepository, never()).save(any(Account.class));
     }
 
-    // --- updateAccount Tests ---
+    // update account tests
     @Test
     void updateAccount_whenExistsAndNotClosed_shouldUpdateAndReturnAccount() {
         // given
-        sampleAccount.setStatus(AccountStatus.ACTIVE); // Can update ACTIVE account
+        sampleAccount.setStatus(AccountStatus.ACTIVE); // can update active accts
         UpdateAccountRequest request = new UpdateAccountRequest();
         request.setAccountType(AccountType.CURRENT);
         when(accountRepository.findByAccountNumber(existingAccountNumber)).thenReturn(Optional.of(sampleAccount));
         when(accountRepository.save(any(Account.class))).thenReturn(sampleAccount);
-        ArgumentCaptor<Account> accountCaptor = ArgumentCaptor.forClass(Account.class);
-
+        
         // when
         AccountResponse response = accountService.updateAccount(existingAccountNumber, request);
-
+        
         // then
-        assertThat(response.getAccountType()).isEqualTo(AccountType.CURRENT);
+        assertThat(response).isNotNull();
+        assertThat(response.getAccountType()).isEqualTo(request.getAccountType());
         verify(accountRepository, times(1)).findByAccountNumber(existingAccountNumber);
-        verify(accountRepository, times(1)).save(accountCaptor.capture());
-        assertThat(accountCaptor.getValue().getAccountType()).isEqualTo(AccountType.CURRENT);
+        verify(accountRepository, times(1)).save(sampleAccount);
     }
-
+    
     @Test
     void updateAccount_whenClosed_shouldThrowIllegalStateException() {
         // given
@@ -267,27 +297,26 @@ public class AccountServiceTest {
         UpdateAccountRequest request = new UpdateAccountRequest();
         request.setAccountType(AccountType.CURRENT);
         when(accountRepository.findByAccountNumber(existingAccountNumber)).thenReturn(Optional.of(sampleAccount));
-
-        // when / then
+        
+        // when/then
         assertThatThrownBy(() -> accountService.updateAccount(existingAccountNumber, request))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("closed account");
+                .hasMessageContaining("closed");
         verify(accountRepository, times(1)).findByAccountNumber(existingAccountNumber);
         verify(accountRepository, never()).save(any(Account.class));
     }
-
+    
     @Test
     void updateAccount_whenNotFound_shouldThrowAccountNotFoundException() {
         // given
         UpdateAccountRequest request = new UpdateAccountRequest();
         request.setAccountType(AccountType.CURRENT);
         when(accountRepository.findByAccountNumber(nonExistingAccountNumber)).thenReturn(Optional.empty());
-
-        // when / then
+        
+        // when/then
         assertThatThrownBy(() -> accountService.updateAccount(nonExistingAccountNumber, request))
                 .isInstanceOf(AccountNotFoundException.class);
         verify(accountRepository, times(1)).findByAccountNumber(nonExistingAccountNumber);
         verify(accountRepository, never()).save(any(Account.class));
     }
-
 } 

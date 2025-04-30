@@ -20,19 +20,19 @@ import java.util.stream.Collectors;
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
-    @Value("${app.jwt.secret}") // In application.properties: app.jwt.secret=YourVeryLongAndSecureSecretKeyHere
+    @Value("${app.jwt.secret}")
     private String jwtSecretString;
 
-    @Value("${app.jwt.expirationMs}") // In application.properties: app.jwt.expirationMs=86400000 (e.g., 24 hours)
+    @Value("${app.jwt.expirationMs}")
     private int jwtExpirationMs;
 
-    private SecretKey key; // Derived from jwtSecretString
+    private SecretKey key;
 
-    // Initialize the key after properties are set
+
     @jakarta.annotation.PostConstruct
     public void init() {
-        // Ensure the secret key is strong enough for HS512
-        if (jwtSecretString == null || jwtSecretString.length() < 64) { // HS512 needs 512 bits = 64 bytes
+
+        if (jwtSecretString == null || jwtSecretString.length() < 64) { // need atleast 64 chars
             logger.warn("JWT Secret is too short! Using a default generated key. PLEASE SET a strong 'app.jwt.secret' in properties.");
             this.key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
         } else {
@@ -44,14 +44,14 @@ public class JwtUtils {
     public String generateJwtToken(Authentication authentication) {
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
 
-        // Extract authorities (roles) from the UserDetails principal
+        // get the user roles for putting in token
         List<String> roles = userPrincipal.getAuthorities().stream()
                                 .map(GrantedAuthority::getAuthority)
                                 .collect(Collectors.toList());
 
         return Jwts.builder()
                 .setSubject((userPrincipal.getUsername()))
-                 // Add the roles as a custom claim
+
                 .claim("roles", roles)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))

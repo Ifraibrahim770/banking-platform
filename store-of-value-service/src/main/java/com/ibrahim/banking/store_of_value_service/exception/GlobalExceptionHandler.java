@@ -53,9 +53,9 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
                 "Bad Request",
-                simplifiedErrorMessage, // Or provide the full map 'errors' in a 'details' field
+                simplifiedErrorMessage, // could put full errors in details field
                 request.getRequestURI()
-                //, errors // Uncomment if ErrorResponse has 'details' field
+                // add errors field maybe
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
@@ -70,11 +70,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
-    // --- Generic Exception Handler (Catch-all) ---
+    // catch everything else handler
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, HttpServletRequest request) {
-        logger.error("Unhandled Exception: {}", ex.getMessage(), ex); // Log stack trace for generic errors
+        logger.error("Unhandled Exception: {}", ex.getMessage(), ex); // log the stack trace too
         ErrorResponse errorResponse = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),

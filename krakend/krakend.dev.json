@@ -1,0 +1,184 @@
+{
+  "version": 3,
+  "name": "banking-gateway-dev",
+  "port": 8080,
+  "endpoints": [
+    {
+      "endpoint": "/api/auth/v1/*",
+      "method": "GET,POST,PUT,DELETE",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "url_pattern": "/api/auth/*",
+          "encoding": "json",
+          "sd": "static",
+          "host": ["localhost:8081"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/profile/v1/*",
+      "method": "GET,POST,PUT,DELETE",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "url_pattern": "/api/profile/*",
+          "encoding": "json",
+          "sd": "static",
+          "host": ["localhost:8081"]
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_url": "",
+          "disable_jwk_security": true,
+          "keys_to_sign": ["access_token"],
+          "cookie_key": "",
+          "scopes": [],
+          "cache": false,
+          "key_identifier_getter": {
+            "alg": "HS256",
+            "kids": {
+              "my-key": "YourVeryLongAndSecureSecretKeyHere_Replace_This_With_Actual_Secret"
+            }
+          }
+        }
+      }
+    },
+    {
+      "endpoint": "/api/accounts/v1/*",
+      "method": "GET,POST,PUT,PATCH,DELETE",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "url_pattern": "/api/accounts/*",
+          "encoding": "json",
+          "sd": "static",
+          "host": ["localhost:8083"]
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_url": "",
+          "disable_jwk_security": true,
+          "keys_to_sign": ["access_token"],
+          "cookie_key": "",
+          "scopes": [],
+          "cache": false,
+          "key_identifier_getter": {
+            "alg": "HS256",
+            "kids": {
+              "my-key": "YourVeryLongAndSecureSecretKeyHere_Replace_This_With_Actual_Secret"
+            }
+          }
+        }
+      }
+    },
+    {
+      "endpoint": "/api/payments/v1/*",
+      "method": "GET,POST,PUT,DELETE",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "url_pattern": "/api/payments/*",
+          "encoding": "json",
+          "sd": "static",
+          "host": ["localhost:8082"]
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_url": "",
+          "disable_jwk_security": true,
+          "keys_to_sign": ["access_token"],
+          "cookie_key": "",
+          "scopes": [],
+          "cache": false,
+          "key_identifier_getter": {
+            "alg": "HS256",
+            "kids": {
+              "my-key": "YourVeryLongAndSecureSecretKeyHere_Replace_This_With_Actual_Secret"
+            }
+          }
+        }
+      }
+    },
+    {
+      "endpoint": "/api/transactions/v1/*",
+      "method": "GET,POST,PUT,DELETE",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "url_pattern": "/api/transactions/*",
+          "encoding": "json",
+          "sd": "static",
+          "host": ["localhost:8082"]
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_url": "",
+          "disable_jwk_security": true,
+          "keys_to_sign": ["access_token"],
+          "cookie_key": "",
+          "scopes": [],
+          "cache": false,
+          "key_identifier_getter": {
+            "alg": "HS256",
+            "kids": {
+              "my-key": "YourVeryLongAndSecureSecretKeyHere_Replace_This_With_Actual_Secret"
+            }
+          }
+        }
+      }
+    },
+    {
+      "endpoint": "/api/notifications/v1/*",
+      "method": "GET,POST,PUT,DELETE",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "url_pattern": "/api/notifications/*",
+          "encoding": "json",
+          "sd": "static",
+          "host": ["localhost:8084"]
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_url": "",
+          "disable_jwk_security": true,
+          "keys_to_sign": ["access_token"],
+          "cookie_key": "",
+          "scopes": [],
+          "cache": false,
+          "key_identifier_getter": {
+            "alg": "HS256",
+            "kids": {
+              "my-key": "YourVeryLongAndSecureSecretKeyHere_Replace_This_With_Actual_Secret"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "extra_config": {
+    "telemetry/logging": {
+      "level": "DEBUG",
+      "syslog": false,
+      "stdout": true
+    },
+    "security/cors": {
+      "allow_origins": ["*"],
+      "allow_methods": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+      "allow_headers": ["Origin", "Authorization", "Content-Type"],
+      "expose_headers": ["Content-Length"],
+      "max_age": "12h"
+    }
+  }
+} 

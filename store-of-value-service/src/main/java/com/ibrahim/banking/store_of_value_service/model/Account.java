@@ -25,13 +25,13 @@ public class Account {
     private String accountNumber;
 
     @Column(nullable = false)
-    private String profileId; // Assuming profile is identified by a String ID
+    private String profileId; // links to user profile id
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AccountType accountType;
 
-    @Column(nullable = false, precision = 19, scale = 4) // Precision and scale for currency
+    @Column(nullable = false, precision = 19, scale = 4) // need this for money values
     private BigDecimal balance;
 
     @Enumerated(EnumType.STRING)

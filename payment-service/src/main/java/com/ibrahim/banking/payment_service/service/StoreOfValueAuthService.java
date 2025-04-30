@@ -48,6 +48,13 @@ public class StoreOfValueAuthService {
         // Token is null or expired, need to authenticate
         try {
             String authUrl = storeOfValueServiceUrl + "/api/auth/signin";
+            logger.info("Attempting to authenticate with profile service at URL: {}", authUrl);
+            logger.info("Using username: {}", username);
+            // Log partial password for debugging (first two chars and last two)
+            String maskedPassword = password.length() > 4 ? 
+                    password.substring(0, 2) + "****" + password.substring(password.length() - 2) : 
+                    "****";
+            logger.info("Using password (masked): {}", maskedPassword);
             
             HttpHeaders headers = new HttpHeaders();
             headers.set("Content-Type", "application/json");
@@ -60,36 +67,49 @@ public class StoreOfValueAuthService {
             
             HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(requestBody, headers);
             
-            ResponseEntity<Map> response = restTemplate.postForEntity(
-                    authUrl,
-                    requestEntity,
-                    Map.class
-            );
-            
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                // Extract token from response
-                String token = (String) response.getBody().get("token");
-                String tokenType = (String) response.getBody().get("type");
+            try {
+                logger.info("Sending authentication request to profile service...");
+                ResponseEntity<Map> response = restTemplate.postForEntity(
+                        authUrl,
+                        requestEntity,
+                        Map.class
+                );
                 
-                if (token != null && tokenType != null) {
-                    // Cache the token
-                    String fullToken = tokenType + " " + token;
-                    cachedToken.set(fullToken);
+                logger.info("Authentication response received with status: {}", response.getStatusCode());
+                
+                if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                    // Extract token from response
+                    String token = (String) response.getBody().get("token");
+                    String tokenType = (String) response.getBody().get("type");
                     
-                    // Set expiration time (with a small safety margin)
-                    tokenExpirationTime = Instant.now().plusMillis(TOKEN_EXPIRATION_TIME);
-                    
-                    logger.info("Successfully authenticated with Store of Value service");
-                    return fullToken;
+                    if (token != null && tokenType != null) {
+                        // Cache the token
+                        String fullToken = tokenType + " " + token;
+                        cachedToken.set(fullToken);
+                        
+                        // Set expiration time (with a small safety margin)
+                        tokenExpirationTime = Instant.now().plusMillis(TOKEN_EXPIRATION_TIME);
+                        
+                        logger.info("Successfully authenticated with profile service. Token acquired (first 10 chars): {}...", 
+                                token.substring(0, Math.min(10, token.length())));
+                        return fullToken;
+                    } else {
+                        logger.error("Authentication response did not contain token or type. Response body: {}", response.getBody());
+                    }
+                } else {
+                    logger.error("Authentication failed with status code: {}", response.getStatusCode());
+                    if (response.getBody() != null) {
+                        logger.error("Response body: {}", response.getBody());
+                    }
                 }
+            } catch (Exception e) {
+                logger.error("Exception while making authentication request: {}", e.getMessage(), e);
             }
             
-            logger.error("Failed to authenticate with Store of Value service: {}", 
-                    response.getStatusCode());
             return null;
             
         } catch (Exception e) {
-            logger.error("Error authenticating with Store of Value service", e);
+            logger.error("Error authenticating with profile service", e);
             return null;
         }
     }

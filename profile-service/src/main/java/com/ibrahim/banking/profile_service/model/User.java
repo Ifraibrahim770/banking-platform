@@ -14,7 +14,7 @@ import java.util.Set;
            @UniqueConstraint(columnNames = "email")
        })
 @Data
-// "user" is often a reserved keyword in SQL
+// cant use "user" cuz its a sql keyword
 public class User {
 
     @Id
@@ -32,12 +32,12 @@ public class User {
     private String lastName;
 
     @Column(nullable = false)
-    private String password; // Store hashed password
+    private String password; // never store plaintext!!
 
     @Column(nullable = false, unique = true)
     private String email;
 
-    @ManyToMany(fetch = FetchType.EAGER) // Fetch roles eagerly when loading user
+    @ManyToMany(fetch = FetchType.EAGER) // eager loading so we get roles with user
     @JoinTable(name = "user_roles",
                joinColumns = @JoinColumn(name = "user_id"),
                inverseJoinColumns = @JoinColumn(name = "role_id"))
@@ -71,7 +71,7 @@ public class User {
         return id != null ? id.hashCode() : 0;
     }
 
-    // toString() for logging/debugging
+    // for logs - dont include password!!
     @Override
     public String toString() {
         return "User{" +

@@ -16,28 +16,28 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // Enables method-level security (e.g., @PreAuthorize)
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Autowired
-    private UserDetailsServiceImpl userDetailsService; // Needed for AuthenticationManager
+    private UserDetailsServiceImpl userDetailsService; // need this for auth manager
 
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
 
-    // Define AuthTokenFilter as a Bean
+
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
         return new AuthTokenFilter();
     }
 
-    // Expose AuthenticationManager as a Bean
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
 
-    // Bean for hashing passwords
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -46,25 +46,32 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Disable CSRF protection as we are using JWT and it's stateless
+
                 .csrf(csrf -> csrf.disable())
-                // Configure exception handling (for 401 Unauthorized)
+                // handles what happens when someone is not logged in properly
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(unauthorizedHandler)
                 )
-                // Configure session management to be stateless, as we use JWT
+                // no sessions, JWT is stateless
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                // Configure authorization rules
+                // who can access what endpoints
                 .authorizeHttpRequests(authz -> authz
-                        // Allow public access to registration and login endpoints (we'll define these later)
+                        // these endponts r open to everyone
                         .requestMatchers("/api/auth/**").permitAll()
-                        // Any other request must be authenticated
+                        // Swagger UI and API docs endpoints
+                        .requestMatchers("/swagger-ui.html").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-resources/**").permitAll()
+                        .requestMatchers("/webjars/**").permitAll()
+                        // everything else needs auth
                         .anyRequest().authenticated()
                 );
 
-        // Add JWT token filter before UsernamePasswordAuthenticationFilter
+        // put  JWT filter b4 the default one
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
