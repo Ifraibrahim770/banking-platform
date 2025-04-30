@@ -27,6 +27,21 @@ services:
     depends_on:
       - krakend
 
+  # Redis Service
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass password
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "password", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # RabbitMQ Message Broker
   rabbitmq:
     image: rabbitmq:3-management
@@ -132,11 +147,15 @@ services:
       - AUTH_SERVICE_URL=http://profile-service:8081
       - AUTH_SERVICE_USERNAME=testadmin
       - AUTH_SERVICE_PASSWORD=Password123
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=password
     depends_on:
       - transactions-db
       - rabbitmq
       - store-of-value-service
       - profile-service
+      - redis
 
   # Transactions Database
   transactions-db:
@@ -196,3 +215,4 @@ volumes:
   transactions-data:
   events-data:
   rabbitmq-data:
+  redis-data:

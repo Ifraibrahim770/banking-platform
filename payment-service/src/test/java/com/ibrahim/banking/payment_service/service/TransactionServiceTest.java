@@ -34,11 +34,14 @@ public class TransactionServiceTest {
     @Mock
     private TransactionPublisherService publisherService;
 
+    @Mock
+    private TransactionLockService transactionLockService;
+
     private TransactionService transactionService;
 
     @BeforeEach
     void setUp() {
-        transactionService = new TransactionService(transactionRepository, accountServiceClient, publisherService);
+        transactionService = new TransactionService(transactionRepository, accountServiceClient, publisherService, transactionLockService);
     }
 
     @Test
@@ -51,6 +54,7 @@ public class TransactionServiceTest {
         Long userId = 1L;
 
         when(accountServiceClient.isAccountActive(accountId)).thenReturn(true);
+        when(transactionLockService.acquireTransactionLock(accountId)).thenReturn(true);
         when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> {
             Transaction savedTransaction = invocation.getArgument(0);
             savedTransaction.setId(1L);
@@ -73,6 +77,7 @@ public class TransactionServiceTest {
         assertTrue(result.getTransactionReference().startsWith("TXN-"));
 
         verify(accountServiceClient).isAccountActive(accountId);
+        verify(transactionLockService).acquireTransactionLock(accountId);
         verify(transactionRepository).save(any(Transaction.class));
         verify(publisherService).publishTransaction(any(Transaction.class));
     }
@@ -109,6 +114,7 @@ public class TransactionServiceTest {
         Long userId = 1L;
 
         when(accountServiceClient.isAccountActive(accountId)).thenReturn(true);
+        when(transactionLockService.acquireTransactionLock(accountId)).thenReturn(true);
         when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> {
             Transaction savedTransaction = invocation.getArgument(0);
             savedTransaction.setId(1L);
@@ -131,6 +137,7 @@ public class TransactionServiceTest {
         assertTrue(result.getTransactionReference().startsWith("TXN-"));
 
         verify(accountServiceClient).isAccountActive(accountId);
+        verify(transactionLockService).acquireTransactionLock(accountId);
         verify(transactionRepository).save(any(Transaction.class));
         verify(publisherService).publishTransaction(any(Transaction.class));
     }
@@ -147,6 +154,8 @@ public class TransactionServiceTest {
 
         when(accountServiceClient.isAccountActive(sourceAccountId)).thenReturn(true);
         when(accountServiceClient.isAccountActive(destinationAccountId)).thenReturn(true);
+        when(transactionLockService.acquireTransactionLock(sourceAccountId)).thenReturn(true);
+        when(transactionLockService.acquireTransactionLock(destinationAccountId)).thenReturn(true);
         when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> {
             Transaction savedTransaction = invocation.getArgument(0);
             savedTransaction.setId(1L);
@@ -172,6 +181,8 @@ public class TransactionServiceTest {
 
         verify(accountServiceClient).isAccountActive(sourceAccountId);
         verify(accountServiceClient).isAccountActive(destinationAccountId);
+        verify(transactionLockService).acquireTransactionLock(sourceAccountId);
+        verify(transactionLockService).acquireTransactionLock(destinationAccountId);
         verify(transactionRepository).save(any(Transaction.class));
         verify(publisherService).publishTransaction(any(Transaction.class));
     }
