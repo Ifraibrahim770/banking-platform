@@ -1,0 +1,941 @@
+{
+	"info": {
+		"_postman_id": "a8b0d9e3-5f81-4e2f-8e1c-d95a12345678",
+		"name": "Banking System API",
+		"description": "Collection for testing the Banking System microservices via KrakenD gateway",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Profile Service",
+			"item": [
+				{
+					"name": "Authentication",
+					"item": [
+						{
+							"name": "[PUBLIC] Sign Up",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"roles\": [\"user\"]\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/auth/v1/signup",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"auth",
+										"v1",
+										"signup"
+									]
+								},
+								"description": "Register a new user"
+							},
+							"response": []
+						},
+						{
+							"name": "[PUBLIC] Sign In",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"password123\"\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/auth/v1/signin",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"auth",
+										"v1",
+										"signin"
+									]
+								},
+								"description": "Authenticate and get JWT token"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Profile Management",
+					"item": [
+						{
+							"name": "[USER] Get Current User Profile",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/profile/v1/me",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"profile",
+										"v1",
+										"me"
+									]
+								},
+								"description": "Get current user's profile data"
+							},
+							"response": []
+						},
+						{
+							"name": "[USER] Update User Profile",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"updated@example.com\",\n  \"firstName\": \"Updated\",\n  \"lastName\": \"User\"\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/profile/v1/me",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"profile",
+										"v1",
+										"me"
+									]
+								},
+								"description": "Update current user's profile data"
+							},
+							"response": []
+						},
+						{
+							"name": "[ADMIN] Get User Profile By ID",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/profile/v1/1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"profile",
+										"v1",
+										"1"
+									]
+								},
+								"description": "Get user profile by ID (admin only)"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Store of Value Service",
+			"item": [
+				{
+					"name": "Account Management",
+					"item": [
+						{
+							"name": "[ADMIN] Create Account",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"profileId\": 1,\n  \"accountType\": \"SAVINGS\"\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/accounts/v1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"accounts",
+										"v1"
+									]
+								},
+								"description": "Create a new account (admin only)"
+							},
+							"response": []
+						},
+						{
+							"name": "[ADMIN] Update Account",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"accountType\": \"CHECKING\"\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/accounts/v1/{{account_number}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"accounts",
+										"v1",
+										"{{account_number}}"
+									]
+								},
+								"description": "Update an account (admin only)"
+							},
+							"response": []
+						},
+						{
+							"name": "[USER] Get Account Balance",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/accounts/v1/{{account_number}}/balance",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"accounts",
+										"v1",
+										"{{account_number}}",
+										"balance"
+									]
+								},
+								"description": "Get account balance"
+							},
+							"response": []
+						},
+						{
+							"name": "[ADMIN] Activate Account",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/accounts/v1/{{account_number}}/activate",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"accounts",
+										"v1",
+										"{{account_number}}",
+										"activate"
+									]
+								},
+								"description": "Activate an account (admin only)"
+							},
+							"response": []
+						},
+						{
+							"name": "[ADMIN] Deactivate Account",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/accounts/v1/{{account_number}}/deactivate",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"accounts",
+										"v1",
+										"{{account_number}}",
+										"deactivate"
+									]
+								},
+								"description": "Deactivate an account (admin only)"
+							},
+							"response": []
+						},
+						{
+							"name": "[ADMIN] Credit Account",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"amount\": 100.00\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/accounts/v1/{{account_number}}/credit",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"accounts",
+										"v1",
+										"{{account_number}}",
+										"credit"
+									]
+								},
+								"description": "Add funds to account (admin only)"
+							},
+							"response": []
+						},
+						{
+							"name": "[ADMIN] Debit Account",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"amount\": 50.00\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/accounts/v1/{{account_number}}/debit",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"accounts",
+										"v1",
+										"{{account_number}}",
+										"debit"
+									]
+								},
+								"description": "Withdraw funds from account (admin only)"
+							},
+							"response": []
+						},
+						{
+							"name": "[ADMIN] Get Account Status",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/accounts/v1/{{account_number}}/status",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"accounts",
+										"v1",
+										"{{account_number}}",
+										"status"
+									]
+								},
+								"description": "Get account status (admin only)"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Payment Service",
+			"item": [
+				{
+					"name": "Payments",
+					"item": [
+						{
+							"name": "[USER] Process Payment",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/payments/v1/process?fromAccount={{from_account}}&toAccount={{to_account}}&amount=100.00",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"payments",
+										"v1",
+										"process"
+									],
+									"query": [
+										{
+											"key": "fromAccount",
+											"value": "{{from_account}}"
+										},
+										{
+											"key": "toAccount",
+											"value": "{{to_account}}"
+										},
+										{
+											"key": "amount",
+											"value": "100.00"
+										}
+									]
+								},
+								"description": "Process a payment between accounts"
+							},
+							"response": []
+						},
+						{
+							"name": "[USER] Get Payment Details",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/payments/v1/{{transaction_id}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"payments",
+										"v1",
+										"{{transaction_id}}"
+									]
+								},
+								"description": "Get payment details by transaction ID"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Transactions",
+					"item": [
+						{
+							"name": "[USER] Create Deposit Transaction",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"accountId\": \"{{account_number}}\",\n  \"amount\": 200.00,\n  \"currency\": \"USD\",\n  \"description\": \"Initial deposit\",\n  \"userId\": 1\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/transactions/v1/deposit",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"transactions",
+										"v1",
+										"deposit"
+									]
+								},
+								"description": "Create a deposit transaction"
+							},
+							"response": []
+						},
+						{
+							"name": "[USER] Create Withdrawal Transaction",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"accountId\": \"{{account_number}}\",\n  \"amount\": 50.00,\n  \"currency\": \"USD\",\n  \"description\": \"ATM withdrawal\",\n  \"userId\": 1\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/transactions/v1/withdraw",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"transactions",
+										"v1",
+										"withdraw"
+									]
+								},
+								"description": "Create a withdrawal transaction"
+							},
+							"response": []
+						},
+						{
+							"name": "[USER] Create Transfer Transaction",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"sourceAccountId\": \"{{from_account}}\",\n  \"destinationAccountId\": \"{{to_account}}\",\n  \"amount\": 75.00,\n  \"currency\": \"USD\",\n  \"description\": \"Transfer to savings\",\n  \"userId\": 1\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/transactions/v1/transfer",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"transactions",
+										"v1",
+										"transfer"
+									]
+								},
+								"description": "Create a transfer between accounts"
+							},
+							"response": []
+						},
+						{
+							"name": "[USER] Get Transaction by Reference",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/transactions/v1/{{transaction_reference}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"transactions",
+										"v1",
+										"{{transaction_reference}}"
+									]
+								},
+								"description": "Get transaction details by reference"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Events Service",
+			"item": [
+				{
+					"name": "Notifications",
+					"item": [
+						{
+							"name": "[ADMIN] Get All Notifications",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/notifications/v1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"notifications",
+										"v1"
+									]
+								},
+								"description": "Get all notifications"
+							},
+							"response": []
+						},
+						{
+							"name": "[USER/ADMIN] Get Notifications by User ID",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/notifications/v1/user/{{user_id}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"notifications",
+										"v1",
+										"user",
+										"{{user_id}}"
+									]
+								},
+								"description": "Get notifications for a specific user"
+							},
+							"response": []
+						},
+						{
+							"name": "[USER/ADMIN] Get Notifications by Transaction Reference",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/notifications/v1/transaction/{{transaction_reference}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"notifications",
+										"v1",
+										"transaction",
+										"{{transaction_reference}}"
+									]
+								},
+								"description": "Get notifications for a specific transaction"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Auto-capture tokens from login responses",
+					"if (pm.response.code === 200 && pm.request.url.toString().includes('/api/auth/v1/signin')) {",
+					"    var jsonData = pm.response.json();",
+					"    if (jsonData.accessToken) {",
+					"        pm.environment.set('jwt_token', jsonData.accessToken);",
+					"        console.log('JWT token saved to environment');",
+					"    }",
+					"}",
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "account_number",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "from_account",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "to_account",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "transaction_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "transaction_reference",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "1",
+			"type": "string"
+		}
+	]
+} 

@@ -19,6 +19,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -50,6 +52,35 @@ public class AccountServiceTest {
         sampleAccount.setStatus(AccountStatus.PENDING_ACTIVATION);
         sampleAccount.setCreatedAt(LocalDateTime.now().minusDays(1));
         sampleAccount.setUpdatedAt(LocalDateTime.now());
+    }
+    
+    // test fetching accounts by profile id
+    @Test
+    void getAccountsByProfileId_shouldReturnAllAccountsForProfile() {
+        // given
+        String profileId = "profile-test-1";
+        
+        Account secondAccount = new Account();
+        secondAccount.setId(2L);
+        secondAccount.setAccountNumber("2222333440");
+        secondAccount.setProfileId(profileId);
+        secondAccount.setBalance(new BigDecimal("200.75"));
+        secondAccount.setAccountType(AccountType.CURRENT);
+        secondAccount.setStatus(AccountStatus.ACTIVE);
+        
+        List<Account> accounts = Arrays.asList(sampleAccount, secondAccount);
+        when(accountRepository.findByProfileId(profileId)).thenReturn(accounts);
+        
+        // when
+        List<AccountResponse> result = accountService.getAccountsByProfileId(profileId);
+        
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getAccountNumber()).isEqualTo(existingAccountNumber);
+        assertThat(result.get(1).getAccountNumber()).isEqualTo("2222333440");
+        assertThat(result.get(0).getProfileId()).isEqualTo(profileId);
+        assertThat(result.get(1).getProfileId()).isEqualTo(profileId);
+        verify(accountRepository, times(1)).findByProfileId(profileId);
     }
 
     // createAccount tests 

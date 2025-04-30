@@ -15,6 +15,18 @@ services:
       - payment-service
       - events-service
 
+  # Banking Dashboard (React)
+  banking-dashboard:
+    build:
+      context: ./banking-dashboard
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080
+    depends_on:
+      - krakend
+
   # RabbitMQ Message Broker
   rabbitmq:
     image: rabbitmq:3-management
@@ -43,9 +55,13 @@ services:
     ports:
       - "8081:8081"
     environment:
+      - SERVER_PORT=8081
       - SPRING_DATASOURCE_URL=jdbc:postgresql://profile-db:5432/profiledb
       - SPRING_DATASOURCE_USERNAME=profile_user
       - SPRING_DATASOURCE_PASSWORD=profile_password
+      - SPRING_SHOW_SQL=false
+      - JWT_SECRET=YourVeryLongAndSecureSecretKeyHere_Replace_This_With_Actual_Secret
+      - JWT_EXPIRATION=86400000
     depends_on:
       - profile-db
 
@@ -68,11 +84,15 @@ services:
       context: ./store-of-value-service
       dockerfile: Dockerfile
     ports:
-      - "8082:8082"
+      - "8083:8083"
     environment:
+      - SERVER_PORT=8083
       - SPRING_DATASOURCE_URL=jdbc:postgresql://accounts-db:5432/accountsdb
       - SPRING_DATASOURCE_USERNAME=accounts_user
       - SPRING_DATASOURCE_PASSWORD=accounts_password
+      - SPRING_SHOW_SQL=false
+      - JWT_SECRET=YourVeryLongAndSecureSecretKeyHere_Replace_This_With_Actual_Secret
+      - JWT_EXPIRATION=86400000
     depends_on:
       - accounts-db
 
@@ -95,13 +115,28 @@ services:
       context: ./payment-service
       dockerfile: Dockerfile
     ports:
-      - "8083:8083"
+      - "8082:8082"
     environment:
+      - SERVER_PORT=8082
       - SPRING_DATASOURCE_URL=jdbc:postgresql://transactions-db:5432/transactionsdb
       - SPRING_DATASOURCE_USERNAME=transactions_user
       - SPRING_DATASOURCE_PASSWORD=transactions_password
+      - SPRING_SHOW_SQL=false
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USERNAME=guest
+      - RABBITMQ_PASSWORD=guest
+      - JWT_SECRET=YourVeryLongAndSecureSecretKeyHere_Replace_This_With_Actual_Secret
+      - JWT_EXPIRATION=86400000
+      - STORE_OF_VALUE_SERVICE_URL=http://store-of-value-service:8083
+      - AUTH_SERVICE_URL=http://profile-service:8081
+      - AUTH_SERVICE_USERNAME=testadmin
+      - AUTH_SERVICE_PASSWORD=Password123
     depends_on:
       - transactions-db
+      - rabbitmq
+      - store-of-value-service
+      - profile-service
 
   # Transactions Database
   transactions-db:
@@ -124,11 +159,22 @@ services:
     ports:
       - "8084:8084"
     environment:
+      - SERVER_PORT=8084
       - SPRING_DATASOURCE_URL=jdbc:postgresql://events-db:5432/eventsdb
       - SPRING_DATASOURCE_USERNAME=events_user
       - SPRING_DATASOURCE_PASSWORD=events_password
+      - SPRING_SHOW_SQL=true
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USERNAME=guest
+      - RABBITMQ_PASSWORD=guest
+      - AUTH_SERVICE_URL=http://profile-service:8081
+      - AUTH_SERVICE_USERNAME=testadmin
+      - AUTH_SERVICE_PASSWORD=Password123
     depends_on:
       - events-db
+      - rabbitmq
+      - profile-service
 
   # Events Database
   events-db:

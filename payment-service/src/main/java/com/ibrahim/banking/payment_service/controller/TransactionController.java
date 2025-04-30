@@ -27,7 +27,7 @@ public class TransactionController {
     }
     
     @PostMapping("/deposit")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
     public ResponseEntity<?> createDepositTransaction(@RequestBody DepositRequestDto request) {
         try {
             // Validate amount
@@ -64,7 +64,7 @@ public class TransactionController {
     }
     
     @PostMapping("/withdrawal")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
     public ResponseEntity<?> createWithdrawalTransaction(@RequestBody WithdrawalRequestDto request) {
         try {
             // Validate amount
@@ -101,7 +101,7 @@ public class TransactionController {
     }
     
     @PostMapping("/transfer")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
     public ResponseEntity<?> createTransferTransaction(@RequestBody TransferRequestDto request) {
         try {
             // Validate amount
@@ -145,7 +145,7 @@ public class TransactionController {
     }
     
     @GetMapping("/{transactionReference}")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
     public ResponseEntity<?> getTransactionByReference(@PathVariable String transactionReference) {
         try {
             Optional<Transaction> optionalTransaction = transactionService.getTransactionByReference(transactionReference);
@@ -166,7 +166,7 @@ public class TransactionController {
     }
     
     @GetMapping("/user/{userId}")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
     public ResponseEntity<?> getTransactionsByUserId(@PathVariable Long userId) {
         try {
             List<Transaction> transactions = transactionService.getTransactionsByUserId(userId);
@@ -184,7 +184,7 @@ public class TransactionController {
     }
     
     @GetMapping("/account/{accountId}")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
     public ResponseEntity<?> getTransactionsByAccountId(@PathVariable Long accountId) {
         try {
             List<Transaction> transactions = transactionService.getTransactionsByAccountId(accountId);

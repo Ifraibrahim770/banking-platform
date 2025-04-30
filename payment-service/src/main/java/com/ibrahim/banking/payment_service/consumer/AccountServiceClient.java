@@ -131,7 +131,7 @@ public class AccountServiceClient {
                 return false;
             }
         } catch (Exception e) {
-            logger.error("Error calling account status API: ", e);
+            logger.error("Error calling account status API: ", e.getMessage());
             return false;
         }
     }
@@ -141,6 +141,8 @@ public class AccountServiceClient {
         if (authToken == null) {
             return null;
         }
+
+        logger.info("Auth token ->" + authToken);
         
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/json");

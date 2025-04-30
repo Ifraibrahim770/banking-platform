@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -28,6 +29,13 @@ public class AccountController {
     public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request) {
         AccountResponse response = accountService.createAccount(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/user/{profileId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
+    public ResponseEntity<List<AccountResponse>> getAccountsByProfileId(@PathVariable String profileId) {
+        List<AccountResponse> accounts = accountService.getAccountsByProfileId(profileId);
+        return ResponseEntity.ok(accounts);
     }
 
     @PutMapping("/{accountNumber}")

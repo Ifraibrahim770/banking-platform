@@ -20,8 +20,12 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -49,6 +53,64 @@ public class AccountControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(accountController).build();
         objectMapper = new ObjectMapper();
         objectMapper.findAndRegisterModules(); // need this for datetime stuff
+    }
+
+    @Test
+    void getAccountsByProfileId_Success() throws Exception {
+        // setup
+        String profileId = "profile123";
+        
+        AccountResponse account1 = new AccountResponse();
+        account1.setId(1L);
+        account1.setAccountNumber("1234567890");
+        account1.setProfileId(profileId);
+        account1.setAccountType(AccountType.SAVINGS);
+        account1.setBalance(new BigDecimal("100.50"));
+        account1.setStatus(AccountStatus.ACTIVE);
+        account1.setCreatedAt(LocalDateTime.now());
+        account1.setUpdatedAt(LocalDateTime.now());
+        
+        AccountResponse account2 = new AccountResponse();
+        account2.setId(2L);
+        account2.setAccountNumber("0987654321");
+        account2.setProfileId(profileId);
+        account2.setAccountType(AccountType.CURRENT);
+        account2.setBalance(new BigDecimal("500.75"));
+        account2.setStatus(AccountStatus.ACTIVE);
+        account2.setCreatedAt(LocalDateTime.now());
+        account2.setUpdatedAt(LocalDateTime.now());
+        
+        List<AccountResponse> accounts = Arrays.asList(account1, account2);
+        
+        when(accountService.getAccountsByProfileId(profileId)).thenReturn(accounts);
+        
+        // do it & check
+        mockMvc.perform(get("/api/accounts/user/{profileId}", profileId)
+                .with(user("user").roles("USER")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].accountNumber", is("1234567890")))
+                .andExpect(jsonPath("$[0].profileId", is(profileId)))
+                .andExpect(jsonPath("$[1].accountNumber", is("0987654321")))
+                .andExpect(jsonPath("$[1].profileId", is(profileId)));
+        
+        verify(accountService, times(1)).getAccountsByProfileId(profileId);
+    }
+    
+    @Test
+    void getAccountsByProfileId_NoAccountsFound() throws Exception {
+        // setup
+        String profileId = "profile-no-accounts";
+        
+        when(accountService.getAccountsByProfileId(profileId)).thenReturn(Collections.emptyList());
+        
+        // do it & check
+        mockMvc.perform(get("/api/accounts/user/{profileId}", profileId)
+                .with(user("user").roles("USER")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+        
+        verify(accountService, times(1)).getAccountsByProfileId(profileId);
     }
 
     @Test

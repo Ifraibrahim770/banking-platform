@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +47,16 @@ public class AccountService {
         Account savedAccount = accountRepository.save(newAccount);
         logger.info("Account created successfully with ID: {} and Number: {}", savedAccount.getId(), savedAccount.getAccountNumber());
         return mapToAccountResponse(savedAccount);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AccountResponse> getAccountsByProfileId(String profileId) {
+        logger.info("Fetching all accounts for profileId: {}", profileId);
+        List<Account> accounts = accountRepository.findByProfileId(profileId);
+        logger.info("Found {} accounts for profileId: {}", accounts.size(), profileId);
+        return accounts.stream()
+                .map(this::mapToAccountResponse)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
