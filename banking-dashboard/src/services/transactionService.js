@@ -75,7 +75,7 @@ export const depositToAccount = async (accountId, amount, description = "") => {
  * @returns {Promise<Object>} The transaction response
  */
 export const withdrawFromAccount = async (accountId, amount, description = "") => {
-  return authFetch('/transactions/v1/withdrawal', {
+  return authFetch('/transactions/v1/withdraw', {
     method: 'POST',
     body: JSON.stringify({
       accountId,

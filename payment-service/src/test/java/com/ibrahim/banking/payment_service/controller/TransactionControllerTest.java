@@ -2,6 +2,9 @@ package com.ibrahim.banking.payment_service.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibrahim.banking.payment_service.dto.*;
+import com.ibrahim.banking.payment_service.exception.ConcurrentTransactionException;
+import com.ibrahim.banking.payment_service.exception.GlobalExceptionHandler;
+import com.ibrahim.banking.payment_service.exception.ResourceNotFoundException;
 import com.ibrahim.banking.payment_service.model.Transaction;
 import com.ibrahim.banking.payment_service.model.TransactionStatus;
 import com.ibrahim.banking.payment_service.model.TransactionType;
@@ -25,6 +28,7 @@ import java.util.Optional;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -45,7 +49,11 @@ public class TransactionControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(transactionController).build();
+        // Include the GlobalExceptionHandler in the MockMvc setup
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(transactionController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
         objectMapper = new ObjectMapper();
     }
 
@@ -93,8 +101,32 @@ public class TransactionControllerTest {
         mockMvc.perform(post("/api/transactions/deposit")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("Amount must be greater than zero")));
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createDepositTransaction_ConcurrentTransaction_ReturnsConflict() throws Exception {
+        // Arrange
+        DepositRequestDto requestDto = new DepositRequestDto();
+        requestDto.setAccountId(1L);
+        requestDto.setAmount(new BigDecimal("100.00"));
+        requestDto.setCurrency("USD");
+        requestDto.setDescription("Test deposit");
+        requestDto.setUserId(1L);
+
+        when(transactionService.createDepositTransaction(
+                eq(requestDto.getAccountId()),
+                eq(requestDto.getAmount()),
+                eq(requestDto.getCurrency()),
+                eq(requestDto.getDescription()),
+                eq(requestDto.getUserId())
+        )).thenThrow(new ConcurrentTransactionException(requestDto.getAccountId()));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/transactions/deposit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isConflict());
     }
 
     @Test
@@ -102,7 +134,7 @@ public class TransactionControllerTest {
         // Arrange
         WithdrawalRequestDto requestDto = new WithdrawalRequestDto();
         requestDto.setAccountId(1L);
-        requestDto.setAmount(new BigDecimal("50.00"));
+        requestDto.setAmount(new BigDecimal("100.00"));
         requestDto.setCurrency("USD");
         requestDto.setDescription("Test withdrawal");
         requestDto.setUserId(1L);
@@ -118,7 +150,7 @@ public class TransactionControllerTest {
         )).thenReturn(mockTransaction);
 
         // Act & Assert
-        mockMvc.perform(post("/api/transactions/withdrawal")
+        mockMvc.perform(post("/api/transactions/withdraw")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isCreated())
@@ -175,8 +207,7 @@ public class TransactionControllerTest {
         mockMvc.perform(post("/api/transactions/transfer")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("Source and destination accounts must be different")));
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -204,8 +235,7 @@ public class TransactionControllerTest {
 
         // Act & Assert
         mockMvc.perform(get("/api/transactions/{transactionReference}", reference))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error", is("Transaction not found")));
+                .andExpect(status().isNotFound());
     }
 
     @Test

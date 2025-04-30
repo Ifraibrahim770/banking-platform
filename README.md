@@ -1,4 +1,3 @@
-
 # 🏦 Banking Microservices Platform
 
 ## 🚀 Project Overview
@@ -11,7 +10,7 @@
 - RabbitMQ (messaging)
 - PostgreSQL (databases)
 - Docker Compose (deployment)
-- Redis (Caching)
+- Redis (caching and transaction locking)
 
 ## 🏛️ Architecture Diagram
 ![Architecture Diagram](./Architecture.png)
@@ -46,92 +45,138 @@
 <summary>🔐 Profile Service</summary>
 
 - **Endpoints**:
-  - `POST /api/auth/register`
-  - `POST /api/auth/login`
-  - `PUT /api/profile/update`
+    - `POST /api/auth/register`
+    - `POST /api/auth/login`
+    - `PUT /api/profile/update`
 - **Security**:
-  - JWT-based authentication
-  - Role-based authorization
+    - JWT-based authentication
+    - Role-based authorization
 </details>
 
 <details>
 <summary>🏦 Store of Value Service</summary>
 
 - **Endpoints**:
-  - `POST /api/accounts`
-  - `GET /api/accounts/{id}`
-  - `PUT /api/accounts/{id}/activate`
+    - `POST /api/accounts`
+    - `GET /api/accounts/{id}`
+    - `PUT /api/accounts/{id}/activate`
 - **Database**:
-  - PostgreSQL table linked to profile IDs
+    - PostgreSQL table linked to profile IDs
 </details>
 
 <details>
 <summary>💸 Payment Service</summary>
 
 - **Endpoints**:
-  - `POST /api/transactions/topup`
-  - `POST /api/transactions/withdraw`
-  - `POST /api/transactions/transfer`
+    - `POST /api/transactions/topup`
+    - `POST /api/transactions/withdraw`
+    - `POST /api/transactions/transfer`
 - **Transactions**:
-  - Event-driven via RabbitMQ
-  - Strong idempotency and concurrency handling
+    - Event-driven via RabbitMQ
+    - Strong idempotency and concurrency handling
+    - Transaction caching with Redis
+    - Distributed locking via Redis for transaction integrity
 </details>
 
 <details>
 <summary>📢 Events Service</summary>
 
 - **Listens To**:
-  - `TransactionCompletedEvent`
+    - `TransactionCompletedEvent`
 - **Sends**:
-  - Email/SMS notifications (mocked)
+    - Email/SMS notifications (mocked)
 </details>
 
 <details>
 <summary>🛡️ API Gateway (KrakenD)</summary>
 
 - **Routes**:
-  - `/api/me/accounts`
-  - `/api/transactions`
+    - `/api/me/accounts`
+    - `/api/transactions`
 - **Security**:
-  - JWT validation
-  - Aggregates backend services
+    - JWT validation
+    - Aggregates backend services
 </details>
 
 <details>
 <summary>🖥️ Frontend (ReactJS)</summary>
 
 - **Features**:
-  - Registration/Login
-  - View balances
-  - Initiate transfers
-  - Receive notifications
+    - Registration/Login
+    - View balances
+    - Initiate transfers
+    - Receive notifications
 </details>
 
-## ⚙️ Local Setup
+## ⚙️ Setup Instructions
 
-1. **Clone Repo**:
+### Docker Setup (Recommended)
+The easiest way to run the entire system is using Docker Compose:
+
+1. **Clone Repository**:
    ```bash
    git clone <repo-url>
    cd banking-platform
    ```
 
-2. **Build Services**:
+2. **Build and Start Services**:
    ```bash
-   mvn clean install
+   docker-compose build
+   docker-compose up -d
    ```
 
-3. **Start Services**:
+3. **Verify Services**:
    ```bash
-   docker-compose up --build
+   docker-compose ps
+   ```
+
+4. **View Logs** (optional):
+   ```bash
+   # View logs from all services
+   docker-compose logs -f
+   
+   # View logs from a specific service
+   docker-compose logs -f payment-service
+   ```
+
+5. **Stop Services**:
+   ```bash
+   docker-compose down
+   ```
+
+### Local Development Setup
+For development work on individual services:
+
+1. **Clone Repository**:
+   ```bash
+   git clone <repo-url>
+   cd banking-platform
+   ```
+
+2. **Start Dependencies** (databases, message broker, Redis):
+   ```bash
+   docker-compose up -d redis rabbitmq profile-db accounts-db transactions-db events-db
+   ```
+
+3. **Build and Run Individual Services**:
+   ```bash
+   # For each service (example with payment-service)
+   cd payment-service
+   mvn clean install
+   mvn spring-boot:run
    ```
 
 4. **Access Services**:
-   - Frontend: `http://localhost:3000`
-   - API Gateway: `http://localhost:8080`
-   - Profile Service: `http://localhost:8081`
-   - Store of Value Service: `http://localhost:8082`
-   - Payment Service: `http://localhost:8083`
-   - Events Service: `http://localhost:8084`
+    - Frontend: `http://localhost:3000`
+    - API Gateway: `http://localhost:8080`
+    - Profile Service: `http://localhost:8081`
+    - Payment Service: `http://localhost:8082`
+    - Store of Value Service: `http://localhost:8083`
+    - Events Service: `http://localhost:8084`
+    - Redis: `localhost:6379`
+    - RabbitMQ Management: `http://localhost:15672` (guest/guest)
+
+> **Important:** In the production-like setup, all client requests to backend services are routed through the KrakenD API Gateway (`http://localhost:8080`). While individual services can be accessed directly during development, the gateway handles authentication, routing, and request aggregation in the integrated system. The frontend application is configured to communicate with the backend exclusively through this gateway.
 
 ## 🧪 Testing Strategy
 
@@ -139,15 +184,26 @@
 - Mocking services: **Mockito**
 - Database tests: **Testcontainers**
 - Edge Cases Covered:
-  - Insufficient balance
-  - Invalid account numbers
-  - Duplicate transactions
+    - Insufficient balance
+    - Invalid account numbers
+    - Duplicate transactions
 
-## 📚 API Documentation
+## �� API Documentation
 
+> **Note:** The endpoints listed in each service description are sample endpoints only. For a complete list of all available endpoints and their authorization requirements, please refer to the Postman collections included with each service.
+
+Each service implements its own API documentation:
 - Profile Service: `http://localhost:8081/swagger-ui.html`
-- Store of Value Service: `http://localhost:8082/swagger-ui.html`
-- Payment Service: `http://localhost:8083/swagger-ui.html`
+- Store of Value Service: `http://localhost:8083/swagger-ui.html`
+- Payment Service: `http://localhost:8082/swagger-ui.html`
+
+### Role-Based API Access
+All services implement role-based access control (RBAC). The Postman collections categorize endpoints as:
+- **Public**: No authentication required
+- **Authenticated**: Requires valid JWT token
+- **Role-Specific**: Requires specific roles (USER, ADMIN, SYSTEM)
+
+Refer to each service's documentation for detailed permission requirements per endpoint.
 
 ## ✨ Technical Highlights
 
@@ -155,6 +211,8 @@
 - Asynchronous transaction processing (RabbitMQ)
 - JWT-based secure authentication
 - API Gateway aggregation (KrakenD)
+- Redis caching for improved transaction performance
+- Distributed transaction locking with Redis to prevent race conditions
 - Docker Compose orchestration for local dev
 - Built for horizontal scaling and resilience
 
