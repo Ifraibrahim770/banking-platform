@@ -723,7 +723,7 @@ const UserDashboard = () => {
       } else if (transactionType === "transfer") {
         // For transfer, hardcode the destination account as requested
         // In a real app, this would be selected by the user
-        const destinationAccountId = "9876543210"; // Hardcoded destination account
+        const destinationAccountId = "12345672"; // Hardcoded destination account
         
         response = await transferBetweenAccounts(
           selectedAccount.accountNumber,
@@ -1256,7 +1256,7 @@ const UserDashboard = () => {
                   <TextField
                     label="To Account"
                     fullWidth
-                    value="9876543210 (Hardcoded for demo)"
+                    value="12345672"
                     disabled
                     InputProps={{
                       readOnly: true,

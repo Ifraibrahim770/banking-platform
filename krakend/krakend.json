@@ -258,14 +258,14 @@
       ]
     },
     {
-      "endpoint": "/api/transactions/v1/withdrawal",
+      "endpoint": "/api/transactions/v1/withdraw",
       "method": "POST",
       "output_encoding": "no-op",
       "input_headers": ["Authorization", "Content-Type"],
       "timeout": "30s",
       "backend": [
         {
-          "url_pattern": "/api/transactions/withdrawal",
+          "url_pattern": "/api/transactions/withdraw",
           "host": ["http://payment-service:8082"],
           "encoding": "no-op",
           "method": "POST",
@@ -356,6 +356,54 @@
         {
           "url_pattern": "/api/accounts/user/{profileId}",
           "host": ["http://store-of-value-service:8083"],
+          "encoding": "no-op",
+          "method": "GET",
+          "disable_host_sanitize": false,
+          "deny": ["protocol"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/notifications/v1",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/api/notifications",
+          "host": ["http://events-service:8084"],
+          "encoding": "no-op",
+          "method": "GET",
+          "disable_host_sanitize": false,
+          "deny": ["protocol"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/notifications/v1/user/{userId}",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/api/notifications/user/{userId}",
+          "host": ["http://events-service:8084"],
+          "encoding": "no-op",
+          "method": "GET",
+          "disable_host_sanitize": false,
+          "deny": ["protocol"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/notifications/v1/transaction/{reference}",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/api/notifications/transaction/{reference}",
+          "host": ["http://events-service:8084"],
           "encoding": "no-op",
           "method": "GET",
           "disable_host_sanitize": false,

@@ -335,18 +335,9 @@ const Login = () => {
                                 Username: <strong>testuser</strong>
                             </Typography>
                             <Typography variant="body2" sx={{ mb: 3 }}>
-                                Password: <strong>password123</strong>
+                                Password: <strong>Password123</strong>
                             </Typography>
 
-                            <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                                Admin Role:
-                            </Typography>
-                            <Typography variant="body2" sx={{ mb: 1 }}>
-                                Username: <strong>testadmin</strong>
-                            </Typography>
-                            <Typography variant="body2">
-                                Password: <strong>password123</strong>
-                            </Typography>
                         </Box>
                     </Box>
                 </Box>

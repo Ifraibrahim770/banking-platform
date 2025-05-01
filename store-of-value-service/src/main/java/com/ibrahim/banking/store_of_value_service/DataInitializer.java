@@ -55,9 +55,7 @@ public class DataInitializer {
         repository.save(account);
     }
     
-    // simple account number generator - format: ACCxxxxPIDy where xxxx is random and y is profile ID
     private String generateAccountNumber(String profileId) {
-        long randomPart = (long) (Math.random() * 10000);
-        return String.format("121%04d122%s", randomPart, profileId);
+        return String.format("1234567"+profileId);
     }
 } 
