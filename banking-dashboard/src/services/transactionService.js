@@ -18,7 +18,7 @@ export const createDepositTransaction = async (transactionData) => {
  * @returns {Promise<Object>} The created transaction
  */
 export const createWithdrawalTransaction = async (transactionData) => {
-  return authFetch('/transactions/v1/withdrawal', {
+  return authFetch('/transactions/v1/withdraw', {
     method: 'POST',
     body: JSON.stringify(transactionData)
   });

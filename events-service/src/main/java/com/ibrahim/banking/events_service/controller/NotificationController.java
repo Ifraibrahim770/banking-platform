@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,9 +32,11 @@ public class NotificationController {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved notifications", 
                      content = @Content(array = @ArraySchema(schema = @Schema(implementation = Notification.class)))),
         @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
         @ApiResponse(responseCode = "500", description = "Server error")
     })
     @GetMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<List<Notification>> getAllNotifications() {
         return ResponseEntity.ok(notificationService.getAllNotifications());
     }
@@ -43,9 +46,11 @@ public class NotificationController {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved notifications", 
                      content = @Content(array = @ArraySchema(schema = @Schema(implementation = Notification.class)))),
         @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
         @ApiResponse(responseCode = "500", description = "Server error")
     })
     @GetMapping("/user/{userId}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER') or @userSecurity.isCurrentUser(#userId)")
     public ResponseEntity<List<Notification>> getNotificationsByUserId(
             @Parameter(description = "ID of the user") @PathVariable Long userId) {
         return ResponseEntity.ok(notificationService.getNotificationsByUserId(userId));
@@ -57,9 +62,11 @@ public class NotificationController {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved notifications", 
                      content = @Content(array = @ArraySchema(schema = @Schema(implementation = Notification.class)))),
         @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
         @ApiResponse(responseCode = "500", description = "Server error")
     })
     @GetMapping("/transaction/{reference}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER') or @userSecurity.isCurrentUser(#userId)")
     public ResponseEntity<List<Notification>> getNotificationsByTransactionReference(
             @Parameter(description = "Transaction reference") @PathVariable String reference) {
         return ResponseEntity.ok(notificationService.getNotificationsByTransactionReference(reference));

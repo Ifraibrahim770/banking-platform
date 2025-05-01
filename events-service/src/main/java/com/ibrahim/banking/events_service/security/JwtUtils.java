@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -28,9 +29,11 @@ public class JwtUtils {
 
     private SecretKey key;
 
+    // Initialize the key after properties are set
     @jakarta.annotation.PostConstruct
     public void init() {
-        if (jwtSecretString == null || jwtSecretString.length() < 64) { // need atleast 64 chars
+
+        if (jwtSecretString == null || jwtSecretString.length() < 64) { // HS512 needs 512 bits = 64 bytes
             logger.warn("JWT Secret is too short! Using a default generated key. PLEASE SET a strong 'app.jwt.secret' in properties.");
             this.key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
         } else {
@@ -42,21 +45,15 @@ public class JwtUtils {
     public String generateJwtToken(Authentication authentication) {
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
 
-        // get the user roles for putting in token
-        List<String> roles = userPrincipal.getAuthorities().stream()
-                                .map(GrantedAuthority::getAuthority)
-                                .collect(Collectors.toList());
-
         return Jwts.builder()
                 .setSubject((userPrincipal.getUsername()))
-                .claim("roles", roles)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
     }
 
-    public String generateTokenFromUsername(String username) {
+     public String generateTokenFromUsername(String username) {
         return Jwts.builder()
                .setSubject(username)
                .setIssuedAt(new Date())
@@ -72,6 +69,28 @@ public class JwtUtils {
                             .parseClaimsJws(token)
                             .getBody();
         return claims.getSubject();
+    }
+
+    @SuppressWarnings("unchecked") // Suppress warning for casting claims.get("roles")
+    public List<GrantedAuthority> getAuthoritiesFromJwtToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                            .setSigningKey(key)
+                            .build()
+                            .parseClaimsJws(token)
+                            .getBody();
+
+
+        List<String> roles = claims.get("roles", List.class);
+
+        if (roles == null) {
+            logger.warn("JWT token does not contain 'roles' claim.");
+            return List.of(); // Return empty list if no roles claim
+        }
+
+
+        return roles.stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
     }
 
     public boolean validateJwtToken(String authToken) {
@@ -92,4 +111,4 @@ public class JwtUtils {
 
         return false;
     }
-} 
+}

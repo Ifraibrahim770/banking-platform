@@ -17,25 +17,25 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity // Enables method-level security (e.g., @PreAuthorize)
 public class SecurityConfig {
 
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
-    
-    @Autowired
-    private UserDetailsServiceImpl userDetailsService;
 
+    // Define AuthTokenFilter as a Bean
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
         return new AuthTokenFilter();
     }
 
+    // Expose AuthenticationManager as a Bean
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
 
+    // Bean for hashing passwords
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -44,17 +44,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // Disable CSRF protection as we are using JWT and it's stateless
                 .csrf(csrf -> csrf.disable())
+                // Configure exception handling (for 401 Unauthorized)
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(unauthorizedHandler)
                         .accessDeniedHandler(new AccessDeniedHandlerImpl())
                 )
-                // Using stateless sessions for JWT
+                // Configure session management to be stateless, as we use JWT
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                // Configure authorization rules
                 .authorizeHttpRequests(authz -> authz
-                        // Actuator endpoints
+                        // Allow public access to actuator endpoints
                         .requestMatchers("/actuator/**").permitAll()
                         // Swagger UI and API docs endpoints
                         .requestMatchers("/swagger-ui.html").permitAll()
@@ -70,4 +73,4 @@ public class SecurityConfig {
 
         return http.build();
     }
-} 
+}

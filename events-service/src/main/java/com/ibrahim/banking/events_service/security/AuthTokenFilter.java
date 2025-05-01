@@ -7,23 +7,21 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
+// Note: This filter needs to be registered in the SecurityConfig
 public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtUtils jwtUtils;
-
-    @Autowired
-    private UserDetailsServiceImpl userDetailsService;
 
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
@@ -32,27 +30,24 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         try {
             String jwt = parseJwt(request);
-            if (jwt != null) {
-                // If token exists but is invalid, send 401 directly
-                if (!jwtUtils.validateJwtToken(jwt)) {
-                    handleAuthenticationError(response, "Invalid or expired token");
-                    return; // Stop the filter chain
-                }
-
-                // Token is valid, proceed with authentication
+            if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                // Extract authorities directly from the token
+                List<GrantedAuthority> authorities = jwtUtils.getAuthoritiesFromJwtToken(jwt);
+
+
                 UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        new UsernamePasswordAuthenticationToken(username, null, authorities);
+
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-            // If no token, let the chain continue - Spring Security will handle it
-            filterChain.doFilter(request, response);
         } catch (Exception e) {
-            logger.error("Cannot set user authentication: {}", e);
-            handleAuthenticationError(response, "Authentication failed: " + e.getMessage());
+            logger.error("Cannot set user authentication: {}", e.getMessage());
         }
+
+        filterChain.doFilter(request, response);
     }
 
     private String parseJwt(HttpServletRequest request) {
@@ -64,10 +59,4 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
         return null;
     }
-
-    private void handleAuthenticationError(HttpServletResponse response, String message) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"" + message + "\"}");
-    }
-} 
+}
