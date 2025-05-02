@@ -188,7 +188,30 @@ For development work on individual services:
     - Invalid account numbers
     - Duplicate transactions
 
-## �� API Documentation
+## 🧪 Testing with Postman
+
+To test the Banking System API endpoints:
+
+1. Import the provided [Banking System API.postman_collection.json] collection into Postman.
+2. For all endpoints, use an admin user with both USER and ADMIN roles.
+3. A test admin user (`testadmin`) has already been configured in the Sign In endpoint.
+4. Authentication process:
+   - Use the "[PUBLIC] Sign In" endpoint to authenticate
+   - The generated JWT token should automatically be stored in the `jwt_token` variable
+   - If the token is not automatically saved, manually copy it from the response and set it in the `jwt_token` collection variable
+5. After successful authentication, you can test all endpoints in the collection
+
+> **Note:** Account numbers have been pre-configured in the collection variables. The default account number is `12345671`, with transfer accounts set up as `from_account: 12345671` and `to_account: 12345672`.
+
+## 🖥️ Testing with Dashboard
+
+You can also navigate to `http://localhost:3000` to access the banking dashboard and test account operations like retrieval, debiting, and crediting through the UI.
+
+![Banking Dashboard](./dashboard.png)
+
+> **Note:** Some functionality shown in the dashboard interface is not yet fully implemented. The dashboard primarily supports basic account operations and transaction viewing.
+
+## 🧪 API Documentation
 
 > **Note:** The endpoints listed in each service description are sample endpoints only. For a complete list of all available endpoints and their authorization requirements, please refer to the Postman collections included with each service.
 
@@ -196,6 +219,7 @@ Each service implements its own API documentation:
 - Profile Service: `http://localhost:8081/swagger-ui.html`
 - Store of Value Service: `http://localhost:8083/swagger-ui.html`
 - Payment Service: `http://localhost:8082/swagger-ui.html`
+- Events Service: `http://localhost:8083/swagger-ui.html`
 
 ### Role-Based API Access
 All services implement role-based access control (RBAC). The Postman collections categorize endpoints as:

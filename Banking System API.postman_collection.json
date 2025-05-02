@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "a8b0d9e3-5f81-4e2f-8e1c-d95a12345678",
+		"_postman_id": "30dc7926-038f-48ad-8331-b88885b0754a",
 		"name": "Banking System API",
 		"description": "Collection for testing the Banking System microservices via KrakenD gateway",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12262850"
 	},
 	"item": [
 		{
@@ -317,6 +318,40 @@
 							"response": []
 						},
 						{
+							"name": "[USER] Get Accounts Via ProfileId",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/accounts/v1/{{account_number}}/balance",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"accounts",
+										"v1",
+										"{{account_number}}",
+										"balance"
+									]
+								},
+								"description": "Get account balance"
+							},
+							"response": []
+						},
+						{
 							"name": "[ADMIN] Activate Account",
 							"request": {
 								"auth": {
@@ -511,91 +546,6 @@
 		{
 			"name": "Payment Service",
 			"item": [
-				{
-					"name": "Payments",
-					"item": [
-						{
-							"name": "[USER] Process Payment",
-							"request": {
-								"auth": {
-									"type": "bearer",
-									"bearer": [
-										{
-											"key": "token",
-											"value": "{{jwt_token}}",
-											"type": "string"
-										}
-									]
-								},
-								"method": "POST",
-								"header": [],
-								"url": {
-									"raw": "http://localhost:8080/api/payments/v1/process?fromAccount={{from_account}}&toAccount={{to_account}}&amount=100.00",
-									"protocol": "http",
-									"host": [
-										"localhost"
-									],
-									"port": "8080",
-									"path": [
-										"api",
-										"payments",
-										"v1",
-										"process"
-									],
-									"query": [
-										{
-											"key": "fromAccount",
-											"value": "{{from_account}}"
-										},
-										{
-											"key": "toAccount",
-											"value": "{{to_account}}"
-										},
-										{
-											"key": "amount",
-											"value": "100.00"
-										}
-									]
-								},
-								"description": "Process a payment between accounts"
-							},
-							"response": []
-						},
-						{
-							"name": "[USER] Get Payment Details",
-							"request": {
-								"auth": {
-									"type": "bearer",
-									"bearer": [
-										{
-											"key": "token",
-											"value": "{{jwt_token}}",
-											"type": "string"
-										}
-									]
-								},
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "http://localhost:8080/api/payments/v1/{{transaction_id}}",
-									"protocol": "http",
-									"host": [
-										"localhost"
-									],
-									"port": "8080",
-									"path": [
-										"api",
-										"payments",
-										"v1",
-										"{{transaction_id}}"
-									]
-								},
-								"description": "Get payment details by transaction ID"
-							},
-							"response": []
-						}
-					]
-				},
 				{
 					"name": "Transactions",
 					"item": [
@@ -888,15 +838,51 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
+					"// Detailed debugging for JWT token capture",
+					"console.log(\"Test script executing for URL:\", pm.request.url.toString());",
+					"console.log(\"Response status code:\", pm.response.code);",
+					"",
 					"// Auto-capture tokens from login responses",
 					"if (pm.response.code === 200 && pm.request.url.toString().includes('/api/auth/v1/signin')) {",
-					"    var jsonData = pm.response.json();",
-					"    if (jsonData.accessToken) {",
-					"        pm.environment.set('jwt_token', jsonData.accessToken);",
-					"        console.log('JWT token saved to environment');",
+					"    console.log(\"Sign-in endpoint detected with 200 status code\");",
+					"    ",
+					"    try {",
+					"        var jsonData = pm.response.json();",
+					"        console.log(\"Response parsed as JSON successfully\");",
+					"        ",
+					"        if (jsonData.token) {",
+					"            console.log(\"Token found in response:\", jsonData.token.substring(0, 10) + \"...\");",
+					"            console.log(\"Environment before setting token:\", pm.environment.get('jwt_token'));",
+					"            pm.environment.set('jwt_token', jsonData.token);",
+					"            console.log(\"Environment after setting token:\", pm.environment.get('jwt_token'));",
+					"            ",
+					"            // Also set as global as a fallback",
+					"            pm.globals.set('jwt_token', jsonData.token);",
+					"            console.log(\"Global variable also set as fallback\");",
+					"        } else {",
+					"            console.log(\"No token property found in response object. Keys:\", Object.keys(jsonData));",
+					"        }",
+					"    } catch (e) {",
+					"        console.error(\"Error in test script:\", e.message);",
+					"        console.log(\"Raw response text:\", pm.response.text());",
 					"    }",
+					"} else {",
+					"    console.log(\"Conditions not met for token capture:\");",
+					"    console.log(\"- URL contains '/api/auth/v1/signin':\", pm.request.url.toString().includes('/api/auth/v1/signin'));",
+					"    console.log(\"- Status code is 200:\", pm.response.code === 200);",
+					"    console.log(\"- Actual URL:\", pm.request.url.toString());",
+					"    console.log(\"- Actual status code:\", pm.response.code);",
 					"}",
-					""
+					"",
+					"// Additional test to verify environment variables are working at all",
+					"const testVar = \"test_\" + Date.now();",
+					"pm.environment.set('test_variable', testVar);",
+					"console.log(\"Test variable set:\", testVar);",
+					"console.log(\"Test variable retrieved:\", pm.environment.get('test_variable'));",
+					"",
+					"// Get all cookies for debugging",
+					"const cookies = pm.cookies.jar();",
+					"console.log(\"Cookie information available:\", cookies !== null && cookies !== undefined);"
 				]
 			}
 		}
@@ -909,17 +895,17 @@
 		},
 		{
 			"key": "account_number",
-			"value": "",
+			"value": "12345671",
 			"type": "string"
 		},
 		{
 			"key": "from_account",
-			"value": "",
+			"value": "12345671",
 			"type": "string"
 		},
 		{
 			"key": "to_account",
-			"value": "",
+			"value": "12345672",
 			"type": "string"
 		},
 		{
@@ -938,4 +924,4 @@
 			"type": "string"
 		}
 	]
-} 
+}
