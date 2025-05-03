@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "30dc7926-038f-48ad-8331-b88885b0754a",
+		"_postman_id": "0b715d48-a361-4216-91aa-5adf06e4824e",
 		"name": "Banking System API",
 		"description": "Collection for testing the Banking System microservices via KrakenD gateway",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -57,7 +57,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"password123\"\n}"
+									"raw": "{\n  \"username\": \"testadmin\",\n  \"password\": \"Password123\"\n}"
 								},
 								"url": {
 									"raw": "http://localhost:8080/api/auth/v1/signin",
@@ -838,51 +838,15 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
-					"// Detailed debugging for JWT token capture",
-					"console.log(\"Test script executing for URL:\", pm.request.url.toString());",
-					"console.log(\"Response status code:\", pm.response.code);",
-					"",
 					"// Auto-capture tokens from login responses",
 					"if (pm.response.code === 200 && pm.request.url.toString().includes('/api/auth/v1/signin')) {",
-					"    console.log(\"Sign-in endpoint detected with 200 status code\");",
-					"    ",
-					"    try {",
-					"        var jsonData = pm.response.json();",
-					"        console.log(\"Response parsed as JSON successfully\");",
-					"        ",
-					"        if (jsonData.token) {",
-					"            console.log(\"Token found in response:\", jsonData.token.substring(0, 10) + \"...\");",
-					"            console.log(\"Environment before setting token:\", pm.environment.get('jwt_token'));",
-					"            pm.environment.set('jwt_token', jsonData.token);",
-					"            console.log(\"Environment after setting token:\", pm.environment.get('jwt_token'));",
-					"            ",
-					"            // Also set as global as a fallback",
-					"            pm.globals.set('jwt_token', jsonData.token);",
-					"            console.log(\"Global variable also set as fallback\");",
-					"        } else {",
-					"            console.log(\"No token property found in response object. Keys:\", Object.keys(jsonData));",
-					"        }",
-					"    } catch (e) {",
-					"        console.error(\"Error in test script:\", e.message);",
-					"        console.log(\"Raw response text:\", pm.response.text());",
+					"    var jsonData = pm.response.json();",
+					"    if (jsonData.token) {",
+					"        pm.environment.set('jwt_token', jsonData.token);",
+					"        console.log('JWT token saved to environment');",
 					"    }",
-					"} else {",
-					"    console.log(\"Conditions not met for token capture:\");",
-					"    console.log(\"- URL contains '/api/auth/v1/signin':\", pm.request.url.toString().includes('/api/auth/v1/signin'));",
-					"    console.log(\"- Status code is 200:\", pm.response.code === 200);",
-					"    console.log(\"- Actual URL:\", pm.request.url.toString());",
-					"    console.log(\"- Actual status code:\", pm.response.code);",
 					"}",
-					"",
-					"// Additional test to verify environment variables are working at all",
-					"const testVar = \"test_\" + Date.now();",
-					"pm.environment.set('test_variable', testVar);",
-					"console.log(\"Test variable set:\", testVar);",
-					"console.log(\"Test variable retrieved:\", pm.environment.get('test_variable'));",
-					"",
-					"// Get all cookies for debugging",
-					"const cookies = pm.cookies.jar();",
-					"console.log(\"Cookie information available:\", cookies !== null && cookies !== undefined);"
+					""
 				]
 			}
 		}
